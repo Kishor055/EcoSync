@@ -3,6 +3,8 @@ import { PT_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
+import { FirebaseClientProvider } from "@/firebase/client-provider";
+import { FirebaseErrorListener } from "@/components/FirebaseErrorListener";
 
 const ptSans = PT_Sans({
   subsets: ["latin"],
@@ -34,7 +36,10 @@ export default function RootLayout({
           ptSans.variable
         )}
       >
-        {children}
+        <FirebaseClientProvider>
+          {children}
+          <FirebaseErrorListener />
+        </FirebaseClientProvider>
         <Toaster />
       </body>
     </html>

@@ -1,0 +1,124 @@
+{
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "A user of the application.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The user's name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address."
+        },
+        "avatarUrl": {
+          "type": "string",
+          "description": "The URL of the user's avatar."
+        }
+      },
+      "required": [
+        "name",
+        "email"
+      ]
+    },
+    "appliance": {
+      "title": "Appliance",
+      "description": "A smart home appliance.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the appliance."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of appliance.",
+          "enum": [
+            "Refrigerator",
+            "Washing Machine",
+            "Dishwasher",
+            "AC Unit",
+            "Water Heater"
+          ]
+        },
+        "efficiencyRating": {
+          "type": "string",
+          "description": "The energy efficiency rating of the appliance.",
+          "enum": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        "energyConsumption": {
+          "type": "number",
+          "description": "The energy consumption of the appliance in kWh."
+        },
+        "waterConsumption": {
+          "type": "number",
+          "description": "The water consumption of the appliance in gallons."
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "efficiencyRating",
+        "energyConsumption",
+        "waterConsumption"
+      ]
+    },
+    "usageData": {
+      "title": "Usage Data",
+      "description": "Monthly usage data for a user.",
+      "type": "object",
+      "properties": {
+        "month": {
+          "type": "string",
+          "description": "The month of the usage data."
+        },
+        "energy": {
+          "type": "number",
+          "description": "The energy usage in kWh."
+        },
+        "water": {
+          "type": "number",
+          "description": "The water usage in gallons."
+        }
+      },
+      "required": [
+        "month",
+        "energy",
+        "water"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "anonymous",
+      "google.com"
+    ]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/user"
+      },
+      "description": "Stores user profile information."
+    },
+    "/users/{userId}/appliances/{applianceId}": {
+      "schema": {
+        "$ref": "#/entities/appliance"
+      },
+      "description": "Stores a user's appliances."
+    },
+    "/users/{userId}/usageData/{usageDataId}": {
+      "schema": {
+        "$ref": "#/entities/usageData"
+      },
+      "description": "Stores a user's monthly usage data."
+    }
+  }
+}
