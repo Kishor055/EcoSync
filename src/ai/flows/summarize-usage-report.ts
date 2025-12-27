@@ -22,8 +22,7 @@ const SummarizeUsageReportInputSchema = z.object({
   usageTrends: z
     .string()
     .describe(
-      'A description of the user usage trends for both energy and water for the month.
-      Include specifics, such as which appliances contributed most to the usage.'
+      'A description of the user usage trends for both energy and water for the month. Include specifics, such as which appliances contributed most to the usage.'
     ),
   conservationTips: z
     .string()
