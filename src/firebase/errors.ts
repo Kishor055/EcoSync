@@ -5,7 +5,7 @@ export type SecurityRuleContext = {
 };
 
 export class FirestorePermissionError extends Error {
-  constructor(public context: SecurityRuleContext) {
+  constructor(public context: SecurityRule-Context) {
     const {path, operation, requestResourceData} = context;
     const requestDetails = JSON.stringify(
       {
