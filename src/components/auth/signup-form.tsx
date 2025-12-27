@@ -109,7 +109,7 @@ export function SignupForm() {
               placeholder="m@example.com"
               required
               value={email}
-              onChange={(e) => setEmail(e.target..value)}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
             />
           </div>
