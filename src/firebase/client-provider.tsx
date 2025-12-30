@@ -1,17 +1,7 @@
 'use client';
 
-import {useEffect, useState} from 'react';
 import {FirebaseProvider} from './provider';
-import {initializeFirebase} from './';
-import type { FirebaseApp } from 'firebase/app';
-import type { Auth } from 'firebase/auth';
-import type { Firestore } from 'firebase/firestore';
-
-interface FirebaseInstances {
-  firebaseApp: FirebaseApp;
-  auth: Auth;
-  firestore: Firestore;
-}
+import {firebaseApp, auth, firestore} from './';
 
 /**
  * Wraps the {@link FirebaseProvider} with a client-side only component that
@@ -23,24 +13,8 @@ export function FirebaseClientProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [firebase, setFirebase] = useState<FirebaseInstances | null>(null);
-
-  useEffect(() => {
-    const instances = initializeFirebase();
-    setFirebase(instances);
-  }, []);
-
-  if (!firebase) {
-    // You can show a loading spinner here if you want.
-    return null;
-  }
-
   return (
-    <FirebaseProvider
-      app={firebase.firebaseApp}
-      auth={firebase.auth}
-      firestore={firebase.firestore}
-    >
+    <FirebaseProvider app={firebaseApp} auth={auth} firestore={firestore}>
       {children}
     </FirebaseProvider>
   );

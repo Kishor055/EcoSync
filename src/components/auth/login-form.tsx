@@ -4,12 +4,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
-  getAuth,
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
 } from 'firebase/auth';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -24,14 +23,13 @@ import { Label } from '@/components/ui/label';
 import { Icons } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { useFirebaseApp } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 
 export function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
-  const app = useFirebaseApp();
-  const auth = getAuth(app);
-  const firestore = getFirestore(app);
+  const auth = useAuth();
+  const firestore = useFirestore();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
