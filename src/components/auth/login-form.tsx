@@ -9,6 +9,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
 } from 'firebase/auth';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -21,7 +22,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Icons } from '@/components/icons';
-import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useFirebaseApp } from '@/firebase';
@@ -31,6 +31,8 @@ export function LoginForm() {
   const { toast } = useToast();
   const app = useFirebaseApp();
   const auth = getAuth(app);
+  const firestore = getFirestore(app);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -60,7 +62,17 @@ export function LoginForm() {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const userCredential = await signInWithPopup(auth, provider);
+      const user = userCredential.user;
+
+      // Create a user document in Firestore if it doesn't exist
+      const userDocRef = doc(firestore, 'users', user.uid);
+      await setDoc(userDocRef, {
+        name: user.displayName,
+        email: user.email,
+        avatarUrl: user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`,
+      }, { merge: true }); // Use merge to avoid overwriting existing data
+
       router.push('/dashboard');
     } catch (error: any) {
       toast({
