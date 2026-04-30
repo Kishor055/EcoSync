@@ -1,21 +1,47 @@
+'use client';
+
 import WelcomeHeader from "@/components/dashboard/welcome-header";
 import { SustainabilityScore } from "@/components/dashboard/sustainability-score";
 import { UsageChart } from "@/components/dashboard/usage-chart";
 import { ApplianceUsage } from "@/components/dashboard/appliance-usage";
 import { AiTips } from "@/components/dashboard/ai-tips";
-import { mockUser, mockAppliances, mockUsageData } from "@/lib/data";
+import { useUser, useCollection } from "@/firebase";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Appliance, UsageData } from "@/lib/types";
 
 export default function DashboardPage() {
+  const { user, loading: userLoading } = useUser();
+  
+  // Fetch real appliance data
+  const appliancesPath = user ? `users/${user.uid}/appliances` : "";
+  const { data: appliances, loading: appliancesLoading } = useCollection<Appliance>(appliancesPath);
+
+  // Fetch real usage data
+  const usageDataPath = user ? `users/${user.uid}/usageData` : "";
+  const { data: usageData, loading: usageLoading } = useCollection<UsageData>(usageDataPath);
+
+  if (userLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-20 w-full" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Skeleton className="h-64 col-span-2" />
+          <Skeleton className="h-64 col-span-2" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
-      <WelcomeHeader name={mockUser.name} />
+      <WelcomeHeader name={user?.displayName || "Friend"} />
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
         <SustainabilityScore />
         <AiTips />
       </div>
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-2">
-        <UsageChart data={mockUsageData} />
-        <ApplianceUsage appliances={mockAppliances} />
+        <UsageChart data={usageData.length > 0 ? usageData : []} />
+        <ApplianceUsage appliances={appliances} />
       </div>
     </>
   );
