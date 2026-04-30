@@ -65,11 +65,16 @@ export function LoginForm() {
 
       // Create a user document in Firestore if it doesn't exist
       const userDocRef = doc(firestore, 'users', user.uid);
-      await setDoc(userDocRef, {
-        name: user.displayName,
-        email: user.email,
-        avatarUrl: user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`,
-      }, { merge: true }); // Use merge to avoid overwriting existing data
+      await setDoc(
+        userDocRef,
+        {
+          name: user.displayName,
+          email: user.email,
+          avatarUrl:
+            user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`,
+        },
+        { merge: true }
+      );
 
       router.push('/dashboard');
     } catch (error: any) {
@@ -166,7 +171,11 @@ export function LoginForm() {
                 disabled={isLoading || isGoogleLoading}
               />
             </div>
-            <Button className="w-full" type="submit" disabled={isLoading || isGoogleLoading}>
+            <Button
+              className="w-full"
+              type="submit"
+              disabled={isLoading || isGoogleLoading}
+            >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Log In
             </Button>

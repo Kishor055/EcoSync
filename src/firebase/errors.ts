@@ -1,12 +1,12 @@
 export type SecurityRuleContext = {
   path: string;
-  operation: 'get' | 'list' | 'create' | 'update' | 'delete';
+  operation: 'get' | 'list' | 'create' | 'update' | 'delete' | 'write';
   requestResourceData?: any;
 };
 
 export class FirestorePermissionError extends Error {
-  constructor(public context: SecurityRule-Context) {
-    const {path, operation, requestResourceData} = context;
+  constructor(public context: SecurityRuleContext) {
+    const { path, operation, requestResourceData } = context;
     const requestDetails = JSON.stringify(
       {
         path,

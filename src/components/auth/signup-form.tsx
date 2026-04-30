@@ -90,7 +90,7 @@ export function SignupForm() {
             user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`,
         },
         { merge: true }
-      ); // Use merge to avoid overwriting existing data
+      );
 
       router.push('/dashboard');
     } catch (error: any) {
