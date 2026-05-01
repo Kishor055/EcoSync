@@ -4,13 +4,6 @@ import {
   onSnapshot,
   query,
   collection,
-  where,
-  limit,
-  orderBy,
-  startAfter,
-  endBefore,
-  limitToLast,
-  type DocumentData,
   type FirestoreError,
   type Query,
   type QueryConstraint,
@@ -24,11 +17,11 @@ interface CollectionData<T> {
   error: FirestoreError | null;
 }
 
-export function useCollection<T>(path: string): CollectionData<T>;
-export function useCollection<T>(query: Query): CollectionData<T>;
+export function useCollection<T>(path: string | null | undefined): CollectionData<T>;
+export function useCollection<T>(query: Query | null | undefined): CollectionData<T>;
 
 export function useCollection<T>(
-  pathOrQuery: string | Query,
+  pathOrQuery: string | Query | null | undefined,
   ...queryConstraints: QueryConstraint[]
 ): CollectionData<T> {
   const db = useFirestore();
@@ -37,34 +30,42 @@ export function useCollection<T>(
   const [error, setError] = useState<FirestoreError | null>(null);
 
   useEffect(() => {
-    if (!db) {
+    if (!db || !pathOrQuery) {
+      if (!pathOrQuery) setLoading(false);
       return;
     }
+
     let q: Query;
-    if (typeof pathOrQuery === 'string') {
-      q = query(collection(db, pathOrQuery), ...queryConstraints);
-    } else {
-      q = pathOrQuery;
-    }
-
-    const unsubscribe = onSnapshot(
-      q,
-      (querySnapshot) => {
-        const data: T[] = [];
-        querySnapshot.forEach((doc) => {
-          data.push({id: doc.id, ...doc.data()} as T);
-        });
-        setData(data);
-        setLoading(false);
-      },
-      (err) => {
-        setError(err);
-        setLoading(false);
+    try {
+      if (typeof pathOrQuery === 'string') {
+        q = query(collection(db, pathOrQuery), ...queryConstraints);
+      } else {
+        q = pathOrQuery;
       }
-    );
 
-    return () => unsubscribe();
-  }, [db, pathOrQuery, ...queryConstraints]);
+      const unsubscribe = onSnapshot(
+        q,
+        (querySnapshot) => {
+          const data: T[] = [];
+          querySnapshot.forEach((doc) => {
+            data.push({id: doc.id, ...doc.data()} as T);
+          });
+          setData(data);
+          setLoading(false);
+          setError(null);
+        },
+        (err) => {
+          setError(err);
+          setLoading(false);
+        }
+      );
+
+      return () => unsubscribe();
+    } catch (e: any) {
+      console.error("Firestore hook error:", e);
+      setLoading(false);
+    }
+  }, [db, pathOrQuery, JSON.stringify(queryConstraints)]);
 
   return {data, loading, error};
 }

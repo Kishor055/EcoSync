@@ -8,16 +8,14 @@ import { AiTips } from "@/components/dashboard/ai-tips";
 import { useUser, useCollection } from "@/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Appliance, UsageData } from "@/lib/types";
-import { useMemo } from "react";
 
 export default function DashboardPage() {
   const { user, loading: userLoading } = useUser();
   
-  // Use a fallback path if user is not yet loaded or authenticated
-  const appliancesPath = user ? `users/${user.uid}/appliances` : "";
+  const appliancesPath = user ? `users/${user.uid}/appliances` : null;
   const { data: appliances, loading: appliancesLoading } = useCollection<Appliance>(appliancesPath);
 
-  const usageDataPath = user ? `users/${user.uid}/usageData` : "";
+  const usageDataPath = user ? `users/${user.uid}/usageData` : null;
   const { data: usageData, loading: usageLoading } = useCollection<UsageData>(usageDataPath);
 
   if (userLoading) {

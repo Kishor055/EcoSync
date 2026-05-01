@@ -3,7 +3,6 @@ import {useEffect, useState} from 'react';
 import {
   doc,
   onSnapshot,
-  type DocumentData,
   type DocumentReference,
   type FirestoreError,
 } from 'firebase/firestore';
@@ -16,11 +15,11 @@ interface DocData<T> {
   error: FirestoreError | null;
 }
 
-export function useDoc<T>(path: string, id: string): DocData<T>;
-export function useDoc<T>(ref: DocumentReference): DocData<T>;
+export function useDoc<T>(path: string | null | undefined, id: string): DocData<T>;
+export function useDoc<T>(ref: DocumentReference | null | undefined): DocData<T>;
 
 export function useDoc<T>(
-  pathOrRef: string | DocumentReference,
+  pathOrRef: string | DocumentReference | null | undefined,
   id?: string
 ): DocData<T> {
   const db = useFirestore();
@@ -29,36 +28,44 @@ export function useDoc<T>(
   const [error, setError] = useState<FirestoreError | null>(null);
 
   useEffect(() => {
-    if (!db) {
+    if (!db || !pathOrRef) {
+      if (!pathOrRef) setLoading(false);
       return;
     }
+
     let docRef: DocumentReference;
-    if (typeof pathOrRef === 'string') {
-      if (!id) {
-        throw new Error('ID must be provided when path is a string');
-      }
-      docRef = doc(db, pathOrRef, id);
-    } else {
-      docRef = pathOrRef;
-    }
-
-    const unsubscribe = onSnapshot(
-      docRef,
-      (doc) => {
-        if (doc.exists()) {
-          setData({id: doc.id, ...doc.data()} as T);
-        } else {
-          setData(null);
+    try {
+      if (typeof pathOrRef === 'string') {
+        if (!id) {
+          throw new Error('ID must be provided when path is a string');
         }
-        setLoading(false);
-      },
-      (err) => {
-        setError(err);
-        setLoading(false);
+        docRef = doc(db, pathOrRef, id);
+      } else {
+        docRef = pathOrRef;
       }
-    );
 
-    return () => unsubscribe();
+      const unsubscribe = onSnapshot(
+        docRef,
+        (doc) => {
+          if (doc.exists()) {
+            setData({id: doc.id, ...doc.data()} as T);
+          } else {
+            setData(null);
+          }
+          setLoading(false);
+          setError(null);
+        },
+        (err) => {
+          setError(err);
+          setLoading(false);
+        }
+      );
+
+      return () => unsubscribe();
+    } catch (e: any) {
+      console.error("Firestore hook error:", e);
+      setLoading(false);
+    }
   }, [db, pathOrRef, id]);
 
   return {data, loading, error};

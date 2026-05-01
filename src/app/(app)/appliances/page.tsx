@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Zap, Droplets } from "lucide-react";
 import { useUser, useCollection, useFirestore } from "@/firebase";
-import { collection, doc, deleteDoc, addDoc, serverTimestamp } from "firebase/firestore";
+import { doc, deleteDoc } from "firebase/firestore";
 import { AddApplianceDialog } from "@/components/appliances/add-appliance-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Appliance } from "@/lib/types";
@@ -18,7 +18,7 @@ export default function AppliancesPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   const appliancesPath = user ? `users/${user.uid}/appliances` : null;
-  const { data: appliances, loading } = useCollection<Appliance>(appliancesPath || "");
+  const { data: appliances, loading } = useCollection<Appliance>(appliancesPath);
 
   const handleDelete = (applianceId: string) => {
     if (!db || !user) return;
