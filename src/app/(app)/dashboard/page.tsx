@@ -31,13 +31,15 @@ export default function DashboardPage() {
     );
   }
 
+  const welcomeName = user?.isAnonymous ? "Guest" : (user?.displayName || "Eco Warrior");
+
   return (
-    <div className="space-y-8">
-      <WelcomeHeader name={user?.displayName || "Guest"} />
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <WelcomeHeader name={welcomeName} />
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <SustainabilityScore className="lg:col-span-1" />
-        <UsageChart data={usageData.length > 0 ? usageData : []} className="lg:col-span-2" />
+        <SustainabilityScore className="lg:col-span-1 shadow-xl" />
+        <UsageChart data={usageData.length > 0 ? usageData : []} className="lg:col-span-2 shadow-xl" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
