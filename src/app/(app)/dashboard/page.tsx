@@ -8,15 +8,15 @@ import { AiTips } from "@/components/dashboard/ai-tips";
 import { useUser, useCollection } from "@/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Appliance, UsageData } from "@/lib/types";
+import { useMemo } from "react";
 
 export default function DashboardPage() {
   const { user, loading: userLoading } = useUser();
   
-  // Fetch real appliance data
+  // Use a fallback path if user is not yet loaded or authenticated
   const appliancesPath = user ? `users/${user.uid}/appliances` : "";
   const { data: appliances, loading: appliancesLoading } = useCollection<Appliance>(appliancesPath);
 
-  // Fetch real usage data
   const usageDataPath = user ? `users/${user.uid}/usageData` : "";
   const { data: usageData, loading: usageLoading } = useCollection<UsageData>(usageDataPath);
 
@@ -34,7 +34,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <WelcomeHeader name={user?.displayName || "Friend"} />
+      <WelcomeHeader name={user?.displayName || "Guest"} />
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
         <SustainabilityScore />
         <AiTips />

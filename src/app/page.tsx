@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Icons } from "@/components/icons";
 import { Droplets, Zap, Target } from "lucide-react";
 
@@ -13,18 +12,15 @@ export default function LandingPage() {
           EcoSync
         </Link>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" asChild>
-            <Link href="/login">Log In</Link>
-          </Button>
           <Button asChild>
-            <Link href="/signup">Sign Up</Link>
+            <Link href="/dashboard">Open Dashboard</Link>
           </Button>
         </div>
       </header>
 
       <main className="flex-grow">
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 text-center">
-          <h1 className="text-4xl md:text-6xl font-headline font-bold mb-6 tracking-tight">
+          <h1 className="text-4xl md:text-6xl font-headline font-bold mb-6 tracking-tight text-foreground">
             Smart Savings,
             <br />
             Sustainable Living.
@@ -33,7 +29,7 @@ export default function LandingPage() {
             EcoSync helps you monitor and optimize your home's energy and water consumption, reducing your bills and your carbon footprint.
           </p>
           <Button size="lg" asChild>
-            <Link href="/signup">Get Started for Free</Link>
+            <Link href="/dashboard">Get Started Now</Link>
           </Button>
         </section>
 

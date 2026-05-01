@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { FirebaseClientProvider } from "@/firebase/client-provider";
 import { FirebaseErrorListener } from "@/components/FirebaseErrorListener";
+import { AnonymousAuth } from "@/components/auth/anonymous-auth";
 
 const ptSans = PT_Sans({
   subsets: ["latin"],
@@ -37,6 +38,7 @@ export default function RootLayout({
         )}
       >
         <FirebaseClientProvider>
+          <AnonymousAuth />
           {children}
           <FirebaseErrorListener />
         </FirebaseClientProvider>
