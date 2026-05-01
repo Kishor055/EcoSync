@@ -5,7 +5,17 @@ export interface User {
   avatarUrl: string;
 }
 
-export type ApplianceType = "Refrigerator" | "Washing Machine" | "Dishwasher" | "AC Unit" | "Water Heater";
+export type ApplianceType = 
+  | "Refrigerator" 
+  | "Washing Machine" 
+  | "Dishwasher" 
+  | "AC Unit" 
+  | "Water Heater"
+  | "TV"
+  | "Lighting"
+  | "Computer"
+  | "EV Charger"
+  | "Furnace";
 
 export interface Appliance {
   id: string;
