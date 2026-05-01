@@ -8,6 +8,7 @@ import type { UsageData } from "@/lib/types";
 import { BarChart3, Download, Filter, TrendingDown, Zap, Droplets, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 export default function ReportsPage() {
   const { user, loading: userLoading } = useUser();
