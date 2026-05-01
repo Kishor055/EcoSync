@@ -22,12 +22,14 @@ import {
   WashingMachine, 
   Snowflake, 
   Flame, 
-  Droplet, 
   Tv, 
   Lamp,
   Waves,
   Microwave,
-  Fan
+  Fan,
+  Coffee,
+  Monitor,
+  Lightbulb
 } from "lucide-react";
 
 const applianceIcons: Record<string, React.ReactNode> = {
@@ -37,9 +39,11 @@ const applianceIcons: Record<string, React.ReactNode> = {
   "AC Unit": <Snowflake className="h-5 w-5 text-sky-400" />,
   "Water Heater": <Flame className="h-5 w-5 text-orange-500" />,
   "TV": <Tv className="h-5 w-5 text-purple-500" />,
-  "Lighting": <Lamp className="h-5 w-5 text-yellow-500" />,
+  "Lighting": <Lightbulb className="h-5 w-5 text-yellow-500" />,
   "Microwave": <Microwave className="h-5 w-5 text-gray-500" />,
   "Fan": <Fan className="h-5 w-5 text-teal-500" />,
+  "Coffee Maker": <Coffee className="h-5 w-5 text-amber-600" />,
+  "Computer": <Monitor className="h-5 w-5 text-slate-600" />,
 }
 
 interface ApplianceUsageProps {
@@ -48,55 +52,61 @@ interface ApplianceUsageProps {
 
 export function ApplianceUsage({ appliances }: ApplianceUsageProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <Card className="border-none shadow-md overflow-hidden">
+      <CardHeader className="bg-muted/30">
+        <CardTitle className="flex items-center gap-2 text-xl font-bold text-foreground">
           <Zap className="h-5 w-5 text-primary" />
-          Consumption Breakdown
+          Appliance Consumption
         </CardTitle>
-        <CardDescription>Estimated monthly energy and water usage per device.</CardDescription>
+        <CardDescription className="text-muted-foreground">Estimated monthly resource allocation.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-muted/10">
             <TableRow>
-              <TableHead>Appliance</TableHead>
-              <TableHead className="text-right">Efficiency</TableHead>
+              <TableHead className="pl-6 py-4">Appliance</TableHead>
+              <TableHead className="text-right">Status</TableHead>
               <TableHead className="text-right">Energy (kWh)</TableHead>
-              <TableHead className="text-right">Water (gal)</TableHead>
+              <TableHead className="text-right pr-6">Water (gal)</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {appliances.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                  No appliances added yet.
+                <TableCell colSpan={4} className="text-center py-12 text-muted-foreground font-medium">
+                  No active monitors. Add an appliance to see live data.
                 </TableCell>
               </TableRow>
             ) : (
               appliances.map((appliance) => (
-                <TableRow key={appliance.id}>
-                  <TableCell>
+                <TableRow key={appliance.id} className="hover:bg-muted/5 transition-colors">
+                  <TableCell className="pl-6">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-muted rounded-full">
+                      <div className="p-2.5 bg-muted rounded-xl">
                         {applianceIcons[appliance.type] || <Zap className="h-5 w-5" />}
                       </div>
                       <div>
-                        <div className="font-medium">{appliance.name}</div>
-                        <div className="text-xs text-muted-foreground">{appliance.type}</div>
+                        <div className="font-bold text-foreground">{appliance.name}</div>
+                        <div className="text-xs text-muted-foreground font-medium">{appliance.type}</div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Badge variant={appliance.efficiencyRating === 'A' ? 'default' : 'secondary'}>
-                      {appliance.efficiencyRating}
+                    <Badge 
+                      variant={appliance.efficiencyRating === 'A' ? 'default' : 'secondary'}
+                      className={cn(
+                        "font-bold uppercase tracking-wider text-[10px]",
+                        appliance.efficiencyRating === 'A' ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      Class {appliance.efficiencyRating}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right font-mono">
+                  <TableCell className="text-right font-mono font-bold text-foreground/80">
                     {appliance.energyConsumption.toFixed(1)}
                   </TableCell>
-                  <TableCell className="text-right font-mono">
-                    {appliance.waterConsumption > 0 ? appliance.waterConsumption : "-"}
+                  <TableCell className="text-right font-mono font-bold text-blue-600 pr-6">
+                    {appliance.waterConsumption > 0 ? appliance.waterConsumption : "0"}
                   </TableCell>
                 </TableRow>
               ))
@@ -107,3 +117,5 @@ export function ApplianceUsage({ appliances }: ApplianceUsageProps) {
     </Card>
   );
 }
+
+import { cn } from "@/lib/utils";

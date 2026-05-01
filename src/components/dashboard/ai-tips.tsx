@@ -10,8 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lightbulb, Loader2 } from "lucide-react";
-import { generateSustainabilityTips, SustainabilityTipsOutput } from "@/ai/flows/generate-sustainability-tips";
+import { Lightbulb, Loader2, Sparkles, ChevronRight } from "lucide-react";
+import { generateSustainabilityTips } from "@/ai/flows/generate-sustainability-tips";
 import { useToast } from "@/hooks/use-toast";
 
 const initialTips = [
@@ -29,18 +29,16 @@ export function AiTips() {
         setIsLoading(true);
         try {
             const result = await generateSustainabilityTips({
-                consumptionData: "High AC usage during peak hours, frequent small laundry loads."
+                consumptionData: "Focus on water conservation and peak hour energy reduction for a high-efficiency home."
             });
-            // Simple parsing of the returned string. A real app might get a structured list.
-            const newTips = result.tips.split('\n').filter(tip => tip.trim().length > 0);
-            setTips(newTips);
-
+            const newTips = result.tips.split('\n').filter(tip => tip.trim().length > 5).slice(0, 3);
+            if (newTips.length > 0) setTips(newTips);
         } catch (error) {
             console.error("Failed to generate tips:", error);
             toast({
                 variant: "destructive",
-                title: "Error",
-                description: "Failed to generate new tips. Please try again.",
+                title: "AI Service Busy",
+                description: "Personalized suggestions are temporarily unavailable. Please try again later.",
             });
         } finally {
             setIsLoading(false);
@@ -48,27 +46,33 @@ export function AiTips() {
     };
 
     return (
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 shadow-md border-primary/5 bg-gradient-to-br from-card to-muted/10">
             <CardHeader>
-                <CardTitle>Optimization Suggestions</CardTitle>
-                <CardDescription>Personalized tips to help you save.</CardDescription>
+                <CardTitle className="flex items-center gap-2 text-xl font-bold">
+                  <Sparkles className="h-5 w-5 text-accent" />
+                  Smart Optimization
+                </CardTitle>
+                <CardDescription>Hyper-personalized efficiency strategies</CardDescription>
             </CardHeader>
             <CardContent>
-                <ul className="space-y-4">
+                <div className="grid gap-3">
                     {tips.map((tip, index) => (
-                        <li key={index} className="flex items-start gap-3">
-                            <Lightbulb className="h-5 w-5 mt-1 shrink-0 text-accent" />
-                            <span className="text-sm text-muted-foreground">{tip.replace(/^- /, '')}</span>
-                        </li>
+                        <div key={index} className="flex items-center gap-4 p-4 rounded-xl bg-background border border-primary/5 hover:border-primary/20 transition-all group">
+                            <div className="bg-accent/10 p-2.5 rounded-lg group-hover:bg-accent/20 transition-colors">
+                              <Lightbulb className="h-5 w-5 text-accent" />
+                            </div>
+                            <span className="text-sm font-medium text-foreground/80 flex-1">{tip.replace(/^[-\d.]+\s*/, '')}</span>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all" />
+                        </div>
                     ))}
-                </ul>
+                </div>
             </CardContent>
             <CardFooter>
-                <Button onClick={handleGenerateTips} disabled={isLoading} variant="outline" className="w-full">
+                <Button onClick={handleGenerateTips} disabled={isLoading} variant="outline" className="w-full bg-background hover:bg-muted font-bold tracking-tight">
                     {isLoading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : null}
-                    {isLoading ? "Generating..." : "Get New AI Tips"}
+                    ) : <Sparkles className="mr-2 h-4 w-4 text-accent" />}
+                    {isLoading ? "Consulting AI..." : "Update Optimization Plan"}
                 </Button>
             </CardFooter>
         </Card>

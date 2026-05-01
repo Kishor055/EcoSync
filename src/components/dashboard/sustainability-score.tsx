@@ -15,7 +15,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2, TrendingUp } from "lucide-react";
+import { Sparkles, Loader2, Leaf } from "lucide-react";
 import {
   PolarGrid,
   PolarRadiusAxis,
@@ -26,14 +26,14 @@ import { summarizeUsageReport, SummarizeUsageReportOutput } from "@/ai/flows/sum
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-const chartData = [{ month: "current", score: 82, fill: "var(--color-chart-1)" }];
+const chartData = [{ month: "current", score: 82, fill: "hsl(var(--primary))" }];
 const chartConfig = {
   score: {
     label: "Score",
   },
   current: {
     label: "Overall",
-    color: "hsl(var(--chart-1))",
+    color: "hsl(var(--primary))",
   },
 };
 
@@ -62,8 +62,8 @@ export function SustainabilityScore({ className }: SustainabilityScoreProps) {
       console.error("Failed to generate summary:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to generate sustainability summary. Please try again.",
+        title: "AI Service Busy",
+        description: "The AI analyst is currently overloaded. Please try again in a few seconds.",
       });
     } finally {
       setIsLoading(false);
@@ -71,35 +71,38 @@ export function SustainabilityScore({ className }: SustainabilityScoreProps) {
   };
 
   return (
-    <Card className={cn("flex flex-col h-full", className)}>
+    <Card className={cn("flex flex-col h-full border-primary/10 shadow-lg relative overflow-hidden", className)}>
+      <div className="absolute top-0 right-0 p-4 opacity-5">
+        <Leaf className="h-24 w-24 text-primary rotate-12" />
+      </div>
       <CardHeader className="items-center pb-0">
-        <CardTitle>Eco Score</CardTitle>
-        <CardDescription>Your performance this month</CardDescription>
+        <CardTitle className="text-xl font-bold">Eco Score</CardTitle>
+        <CardDescription>Real-time performance rating</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 pb-0 flex flex-col items-center justify-center">
+      <CardContent className="flex-1 pb-0 flex flex-col items-center justify-center relative">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square w-full max-w-[200px]"
+          className="mx-auto aspect-square w-full max-w-[220px]"
         >
           <RadialBarChart
             data={chartData}
-            startAngle={-90}
-            endAngle={270}
-            innerRadius="70%"
+            startAngle={90}
+            endAngle={450}
+            innerRadius="75%"
             outerRadius="100%"
-            barSize={15}
+            barSize={18}
           >
             <PolarGrid
               gridType="circle"
               radialLines={false}
               stroke="none"
-              className="fill-muted/20"
+              className="fill-muted/40"
             />
             <PolarRadiusAxis tick={false} tickLine={false} axisLine={false} />
             <RadialBar
               dataKey="score"
               background={{ fill: "hsl(var(--muted))" }}
-              cornerRadius={10}
+              cornerRadius={12}
             />
             <ChartTooltip
               cursor={false}
@@ -107,27 +110,27 @@ export function SustainabilityScore({ className }: SustainabilityScoreProps) {
             />
           </RadialBarChart>
         </ChartContainer>
-        <div className="absolute flex flex-col items-center justify-center mt-[-10px]">
-          <span className="text-4xl font-bold font-headline">{chartData[0].score}</span>
-          <span className="text-xs text-muted-foreground uppercase font-semibold">Points</span>
+        <div className="absolute flex flex-col items-center justify-center pt-4">
+          <span className="text-5xl font-extrabold tracking-tighter text-primary">{chartData[0].score}</span>
+          <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Eco Points</span>
         </div>
       </CardContent>
       
-      <CardFooter className="flex-col gap-2 p-4 bg-muted/50 mt-4 rounded-b-lg">
+      <CardFooter className="flex-col gap-3 p-6 bg-muted/30 mt-4">
         {summary ? (
-          <div className="text-sm leading-relaxed mb-4 text-center italic">
+          <div className="text-sm leading-relaxed text-center font-medium text-foreground/80 bg-background/50 p-3 rounded-lg border border-primary/5">
             "{summary.summary}"
           </div>
         ) : (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
-             <TrendingUp className="h-3 w-3" />
-             Trending 5% better than last month
+          <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+             <Sparkles className="h-4 w-4" />
+             AI Analyst: Peak Efficiency Detected
           </div>
         )}
         <Button 
           onClick={handleGenerateSummary} 
           disabled={isLoading} 
-          className="w-full shadow-lg"
+          className="w-full shadow-md hover:shadow-lg transition-all"
           variant={summary ? "outline" : "default"}
         >
           {isLoading ? (
@@ -135,7 +138,7 @@ export function SustainabilityScore({ className }: SustainabilityScoreProps) {
           ) : (
             <Sparkles className="mr-2 h-4 w-4" />
           )}
-          {isLoading ? "Analyzing..." : (summary ? "Refresh Insight" : "Get AI Insights")}
+          {isLoading ? "Analyzing..." : (summary ? "Refresh Analysis" : "Get AI Insights")}
         </Button>
       </CardFooter>
     </Card>
