@@ -3,3 +3,4 @@ config();
 
 import '@/ai/flows/summarize-usage-report.ts';
 import '@/ai/flows/generate-sustainability-tips.ts';
+import '@/ai/flows/sustainability-assistant.ts';

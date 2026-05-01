@@ -5,6 +5,7 @@ import { SustainabilityScore } from "@/components/dashboard/sustainability-score
 import { UsageChart } from "@/components/dashboard/usage-chart";
 import { ApplianceUsage } from "@/components/dashboard/appliance-usage";
 import { AiTips } from "@/components/dashboard/ai-tips";
+import { SustainabilityChat } from "@/components/ai/sustainability-chat";
 import { useUser, useCollection } from "@/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Appliance, UsageData } from "@/lib/types";
@@ -31,16 +32,23 @@ export default function DashboardPage() {
   }
 
   return (
-    <>
+    <div className="space-y-8">
       <WelcomeHeader name={user?.displayName || "Guest"} />
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-        <SustainabilityScore />
-        <AiTips />
+      
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <SustainabilityScore className="lg:col-span-1" />
+        <UsageChart data={usageData.length > 0 ? usageData : []} className="lg:col-span-2" />
       </div>
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-2">
-        <UsageChart data={usageData.length > 0 ? usageData : []} />
-        <ApplianceUsage appliances={appliances} />
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-6">
+          <AiTips />
+          <ApplianceUsage appliances={appliances} />
+        </div>
+        <div className="lg:col-span-1">
+          <SustainabilityChat />
+        </div>
       </div>
-    </>
+    </div>
   );
 }

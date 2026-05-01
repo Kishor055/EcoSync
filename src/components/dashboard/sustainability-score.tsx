@@ -15,7 +15,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, TrendingUp } from "lucide-react";
 import {
   PolarGrid,
   PolarRadiusAxis,
@@ -24,19 +24,24 @@ import {
 } from "recharts";
 import { summarizeUsageReport, SummarizeUsageReportOutput } from "@/ai/flows/summarize-usage-report";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
-const chartData = [{ month: "june", score: 82, fill: "var(--color-chart-1)" }];
+const chartData = [{ month: "current", score: 82, fill: "var(--color-chart-1)" }];
 const chartConfig = {
   score: {
     label: "Score",
   },
-  june: {
-    label: "June",
+  current: {
+    label: "Overall",
     color: "hsl(var(--chart-1))",
   },
 };
 
-export function SustainabilityScore() {
+interface SustainabilityScoreProps {
+  className?: string;
+}
+
+export function SustainabilityScore({ className }: SustainabilityScoreProps) {
   const [summary, setSummary] = useState<SummarizeUsageReportOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -66,15 +71,15 @@ export function SustainabilityScore() {
   };
 
   return (
-    <Card className="flex flex-col lg:col-span-2">
+    <Card className={cn("flex flex-col h-full", className)}>
       <CardHeader className="items-center pb-0">
-        <CardTitle>Sustainability Score</CardTitle>
-        <CardDescription>Your score for June</CardDescription>
+        <CardTitle>Eco Score</CardTitle>
+        <CardDescription>Your performance this month</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 pb-0">
+      <CardContent className="flex-1 pb-0 flex flex-col items-center justify-center">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square h-full max-h-[250px]"
+          className="mx-auto aspect-square w-full max-w-[200px]"
         >
           <RadialBarChart
             data={chartData}
@@ -82,16 +87,15 @@ export function SustainabilityScore() {
             endAngle={270}
             innerRadius="70%"
             outerRadius="100%"
-            barSize={20}
+            barSize={15}
           >
             <PolarGrid
               gridType="circle"
               radialLines={false}
               stroke="none"
-              className="fill-white dark:fill-black"
+              className="fill-muted/20"
             />
-            <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
-            </PolarRadiusAxis>
+            <PolarRadiusAxis tick={false} tickLine={false} axisLine={false} />
             <RadialBar
               dataKey="score"
               background={{ fill: "hsl(var(--muted))" }}
@@ -103,23 +107,35 @@ export function SustainabilityScore() {
             />
           </RadialBarChart>
         </ChartContainer>
+        <div className="absolute flex flex-col items-center justify-center mt-[-10px]">
+          <span className="text-4xl font-bold font-headline">{chartData[0].score}</span>
+          <span className="text-xs text-muted-foreground uppercase font-semibold">Points</span>
+        </div>
       </CardContent>
-      <div className="flex w-full items-center justify-center p-4">
-        <div className="text-4xl font-bold font-headline">{chartData[0].score}<span className="text-xl text-muted-foreground">/100</span></div>
-      </div>
-      {summary && (
-        <CardFooter className="flex-col gap-2 text-sm pt-4">
-          <div className="leading-relaxed text-center">{summary.summary}</div>
-        </CardFooter>
-      )}
-      <CardFooter className="flex-col gap-2 text-sm pt-4">
-        <Button onClick={handleGenerateSummary} disabled={isLoading} className="w-full">
+      
+      <CardFooter className="flex-col gap-2 p-4 bg-muted/50 mt-4 rounded-b-lg">
+        {summary ? (
+          <div className="text-sm leading-relaxed mb-4 text-center italic">
+            "{summary.summary}"
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
+             <TrendingUp className="h-3 w-3" />
+             Trending 5% better than last month
+          </div>
+        )}
+        <Button 
+          onClick={handleGenerateSummary} 
+          disabled={isLoading} 
+          className="w-full shadow-lg"
+          variant={summary ? "outline" : "default"}
+        >
           {isLoading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <Sparkles className="mr-2 h-4 w-4" />
           )}
-          {isLoading ? "Analyzing..." : (summary ? "Regenerate AI Summary" : "Generate AI Summary")}
+          {isLoading ? "Analyzing..." : (summary ? "Refresh Insight" : "Get AI Insights")}
         </Button>
       </CardFooter>
     </Card>

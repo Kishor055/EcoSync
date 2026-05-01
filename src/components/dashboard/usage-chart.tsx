@@ -1,6 +1,6 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Legend } from "recharts";
 import {
   Card,
   CardContent,
@@ -15,6 +15,7 @@ import {
   ChartConfig,
 } from "@/components/ui/chart";
 import type { UsageData } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 const chartConfig = {
   energy: {
@@ -29,26 +30,26 @@ const chartConfig = {
 
 interface UsageChartProps {
   data: UsageData[];
+  className?: string;
 }
 
-export function UsageChart({ data }: UsageChartProps) {
-  // Sort data by month sequence if needed, or just display as is
+export function UsageChart({ data, className }: UsageChartProps) {
   const displayData = data.length > 0 ? data : [
-    { month: "Jan", energy: 0, water: 0 },
-    { month: "Feb", energy: 0, water: 0 },
-    { month: "Mar", energy: 0, water: 0 },
+    { month: "Jan", energy: 320, water: 1500 },
+    { month: "Feb", energy: 290, water: 1400 },
+    { month: "Mar", energy: 310, water: 1600 },
   ];
 
   return (
-    <Card className="flex flex-col h-full">
+    <Card className={cn("flex flex-col h-full", className)}>
       <CardHeader>
-        <CardTitle>Usage Overview</CardTitle>
-        <CardDescription>Monthly energy and water trends.</CardDescription>
+        <CardTitle>Usage Trends</CardTitle>
+        <CardDescription>Monthly energy and water consumption comparison.</CardDescription>
       </CardHeader>
       <CardContent className="flex-1">
         <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={displayData} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
+            <BarChart data={displayData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.5} />
               <XAxis
                 dataKey="month"
@@ -57,14 +58,40 @@ export function UsageChart({ data }: UsageChartProps) {
                 axisLine={false}
                 tickFormatter={(value) => value.slice(0, 3)}
               />
-              <YAxis yAxisId="left" tickLine={false} axisLine={false} stroke="hsl(var(--chart-1))" />
-              <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} stroke="hsl(var(--chart-2))" />
+              <YAxis 
+                yAxisId="left" 
+                tickLine={false} 
+                axisLine={false} 
+                tick={{fontSize: 10}}
+              />
+              <YAxis 
+                yAxisId="right" 
+                orientation="right" 
+                tickLine={false} 
+                axisLine={false}
+                tick={{fontSize: 10}}
+              />
               <ChartTooltip
                 cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }}
                 content={<ChartTooltipContent />}
               />
-              <Bar dataKey="energy" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} yAxisId="left" />
-              <Bar dataKey="water" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} yAxisId="right" />
+              <Legend />
+              <Bar 
+                dataKey="energy" 
+                name="Energy (kWh)"
+                fill="hsl(var(--chart-1))" 
+                radius={[4, 4, 0, 0]} 
+                yAxisId="left" 
+                barSize={30}
+              />
+              <Bar 
+                dataKey="water" 
+                name="Water (gal)"
+                fill="hsl(var(--chart-2))" 
+                radius={[4, 4, 0, 0]} 
+                yAxisId="right" 
+                barSize={30}
+              />
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
