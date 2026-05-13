@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -25,8 +25,9 @@ import {
 import { summarizeUsageReport, SummarizeUsageReportOutput } from "@/ai/flows/summarize-usage-report";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useUser, useCollection } from "@/firebase";
+import type { Appliance } from "@/lib/types";
 
-const chartData = [{ month: "current", score: 82, fill: "hsl(var(--primary))" }];
 const chartConfig = {
   score: {
     label: "Score",
@@ -42,28 +43,46 @@ interface SustainabilityScoreProps {
 }
 
 export function SustainabilityScore({ className }: SustainabilityScoreProps) {
+  const { user } = useUser();
   const [summary, setSummary] = useState<SummarizeUsageReportOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  const appliancesPath = user ? `users/${user.uid}/appliances` : null;
+  const { data: appliances } = useCollection<Appliance>(appliancesPath);
+
+  // Calculate dynamic metrics based on user's appliances
+  const metrics = useMemo(() => {
+    const totalEnergy = appliances.reduce((sum, app) => sum + (app.energyConsumption || 0), 0);
+    const totalWater = appliances.reduce((sum, app) => sum + (app.waterConsumption || 0), 0);
+    const score = Math.max(65, Math.min(95, 100 - (totalEnergy / 50))); // Simplified dynamic score
+    return { totalEnergy, totalWater, score };
+  }, [appliances]);
+
+  const chartData = [{ month: "current", score: metrics.score, fill: "hsl(var(--primary))" }];
 
   const handleGenerateSummary = async () => {
     setIsLoading(true);
     setSummary(null);
     try {
       const result = await summarizeUsageReport({
-        energyUsage: 370,
-        waterUsage: 1900,
-        averageTemperature: 75,
-        usageTrends: "AC unit usage is high during the day. Dishwasher is run daily.",
-        conservationTips: "User has been turning off lights when leaving rooms.",
+        energyUsage: metrics.totalEnergy || 350,
+        waterUsage: metrics.totalWater || 1800,
+        averageTemperature: 72,
+        usageTrends: appliances.length > 0 
+          ? `User has ${appliances.length} appliances monitored. Largest consumer is ${appliances.sort((a,b) => b.energyConsumption - a.energyConsumption)[0]?.name}.`
+          : "No specific appliances monitored yet.",
+        conservationTips: "User is actively tracking consumption via dashboard.",
       });
       setSummary(result);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to generate summary:", error);
       toast({
         variant: "destructive",
-        title: "AI Service Busy",
-        description: "The AI analyst is currently overloaded. Please try again in a few seconds.",
+        title: "AI Analysis Failed",
+        description: error.message?.includes('demand') 
+          ? "The AI model is currently busy. Please try again in a moment."
+          : "Could not connect to the analysis service.",
       });
     } finally {
       setIsLoading(false);
@@ -71,12 +90,12 @@ export function SustainabilityScore({ className }: SustainabilityScoreProps) {
   };
 
   return (
-    <Card className={cn("flex flex-col h-full border-primary/10 shadow-lg relative overflow-hidden", className)}>
-      <div className="absolute top-0 right-0 p-4 opacity-5">
+    <Card id="ai-analysis-section" className={cn("flex flex-col h-full border-primary/10 shadow-lg relative overflow-hidden", className)}>
+      <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
         <Leaf className="h-24 w-24 text-primary rotate-12" />
       </div>
       <CardHeader className="items-center pb-0">
-        <CardTitle className="text-xl font-bold">Eco Score</CardTitle>
+        <CardTitle className="text-xl font-bold text-foreground">Eco Score</CardTitle>
         <CardDescription>Real-time performance rating</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0 flex flex-col items-center justify-center relative">
@@ -111,26 +130,26 @@ export function SustainabilityScore({ className }: SustainabilityScoreProps) {
           </RadialBarChart>
         </ChartContainer>
         <div className="absolute flex flex-col items-center justify-center pt-4">
-          <span className="text-5xl font-extrabold tracking-tighter text-primary">{chartData[0].score}</span>
+          <span className="text-5xl font-extrabold tracking-tighter text-primary">{Math.round(metrics.score)}</span>
           <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Eco Points</span>
         </div>
       </CardContent>
       
-      <CardFooter className="flex-col gap-3 p-6 bg-muted/30 mt-4">
+      <CardFooter className="flex-col gap-3 p-6 bg-muted/30 mt-4 border-t">
         {summary ? (
-          <div className="text-sm leading-relaxed text-center font-medium text-foreground/80 bg-background/50 p-3 rounded-lg border border-primary/5">
+          <div className="text-sm leading-relaxed text-center font-medium text-foreground/80 bg-background/50 p-4 rounded-xl border border-primary/10 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-500">
             "{summary.summary}"
           </div>
         ) : (
-          <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-             <Sparkles className="h-4 w-4" />
-             AI Analyst: Peak Efficiency Detected
+          <div className="flex items-center gap-2 text-sm font-semibold text-primary/80 italic">
+             <Sparkles className="h-4 w-4 animate-pulse" />
+             AI Analyst: Data synchronization complete
           </div>
         )}
         <Button 
           onClick={handleGenerateSummary} 
           disabled={isLoading} 
-          className="w-full shadow-md hover:shadow-lg transition-all"
+          className="w-full shadow-md hover:shadow-lg transition-all font-bold"
           variant={summary ? "outline" : "default"}
         >
           {isLoading ? (
@@ -138,7 +157,7 @@ export function SustainabilityScore({ className }: SustainabilityScoreProps) {
           ) : (
             <Sparkles className="mr-2 h-4 w-4" />
           )}
-          {isLoading ? "Analyzing..." : (summary ? "Refresh Analysis" : "Get AI Insights")}
+          {isLoading ? "Analyzing Data..." : (summary ? "Refresh Analysis" : "Get AI Insights")}
         </Button>
       </CardFooter>
     </Card>
