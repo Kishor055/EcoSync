@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-
 # EcoSync Enterprise
 
 EcoSync is a high-performance sustainability monitoring platform built for enterprise scalability.
