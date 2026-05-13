@@ -1,124 +1,60 @@
+
 {
   "entities": {
     "user": {
       "title": "User",
-      "description": "A user of the application.",
+      "description": "Enterprise user profile.",
       "type": "object",
       "properties": {
-        "name": {
-          "type": "string",
-          "description": "The user's name."
-        },
-        "email": {
-          "type": "string",
-          "description": "The user's email address."
-        },
-        "avatarUrl": {
-          "type": "string",
-          "description": "The URL of the user's avatar."
-        }
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "name",
-        "email"
-      ]
+      "required": ["name", "email"]
     },
     "appliance": {
       "title": "Appliance",
-      "description": "A smart home appliance.",
+      "description": "Monitored home appliance.",
       "type": "object",
       "properties": {
-        "name": {
-          "type": "string",
-          "description": "The name of the appliance."
-        },
-        "type": {
-          "type": "string",
-          "description": "The type of appliance.",
-          "enum": [
-            "Refrigerator",
-            "Washing Machine",
-            "Dishwasher",
-            "AC Unit",
-            "Water Heater"
-          ]
-        },
-        "efficiencyRating": {
-          "type": "string",
-          "description": "The energy efficiency rating of the appliance.",
-          "enum": [
-            "A",
-            "B",
-            "C",
-            "D"
-          ]
-        },
-        "energyConsumption": {
-          "type": "number",
-          "description": "The energy consumption of the appliance in kWh."
-        },
-        "waterConsumption": {
-          "type": "number",
-          "description": "The water consumption of the appliance in gallons."
-        }
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "efficiencyRating": { "type": "string", "enum": ["A", "B", "C", "D"] },
+        "energyConsumption": { "type": "number" },
+        "waterConsumption": { "type": "number" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "name",
-        "type",
-        "efficiencyRating",
-        "energyConsumption",
-        "waterConsumption"
-      ]
+      "required": ["name", "type", "efficiencyRating", "energyConsumption"]
     },
-    "usageData": {
-      "title": "Usage Data",
-      "description": "Monthly usage data for a user.",
+    "activity": {
+      "title": "Activity Log",
+      "description": "User sustainability actions.",
       "type": "object",
       "properties": {
-        "month": {
-          "type": "string",
-          "description": "The month of the usage data."
-        },
-        "energy": {
-          "type": "number",
-          "description": "The energy usage in kWh."
-        },
-        "water": {
-          "type": "number",
-          "description": "The water usage in gallons."
-        }
-      },
-      "required": [
-        "month",
-        "energy",
-        "water"
-      ]
+        "type": { "type": "string" },
+        "description": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "impactScore": { "type": "number" }
+      }
     }
   },
   "auth": {
-    "providers": [
-      "anonymous",
-      "google.com"
-    ]
+    "providers": ["google.com", "email", "anonymous"]
   },
   "firestore": {
     "/users/{userId}": {
-      "schema": {
-        "$ref": "#/entities/user"
-      },
-      "description": "Stores user profile information."
+      "schema": { "$ref": "#/entities/user" },
+      "description": "User profile data."
     },
     "/users/{userId}/appliances/{applianceId}": {
-      "schema": {
-        "$ref": "#/entities/appliance"
-      },
-      "description": "Stores a user's appliances."
+      "schema": { "$ref": "#/entities/appliance" },
+      "description": "User appliances."
     },
-    "/users/{userId}/usageData/{usageDataId}": {
-      "schema": {
-        "$ref": "#/entities/usageData"
-      },
-      "description": "Stores a user's monthly usage data."
+    "/users/{userId}/activities/{activityId}": {
+      "schema": { "$ref": "#/entities/activity" },
+      "description": "Activity audit logs."
     }
   }
 }

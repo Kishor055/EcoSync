@@ -1,8 +1,13 @@
-export interface User {
+
+export type Role = 'user' | 'admin';
+
+export interface UserProfile {
   id: string;
   name: string;
   email: string;
   avatarUrl: string;
+  role: Role;
+  createdAt: string;
 }
 
 export type ApplianceType = 
@@ -22,12 +27,21 @@ export interface Appliance {
   name: string;
   type: ApplianceType;
   efficiencyRating: "A" | "B" | "C" | "D";
-  energyConsumption: number; // in kWh
-  waterConsumption: number; // in Gallons
+  energyConsumption: number; 
+  waterConsumption: number;
 }
 
 export interface UsageData {
+  id?: string;
   month: string;
   energy: number;
   water: number;
+}
+
+export interface ActivityLog {
+  id: string;
+  type: 'appliance_added' | 'goal_reached' | 'optimization_applied';
+  description: string;
+  timestamp: string;
+  impactScore: number;
 }
