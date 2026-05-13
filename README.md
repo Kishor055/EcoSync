@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 # EcoSync Enterprise
 
@@ -25,3 +26,6 @@ EcoSync is a high-performance sustainability monitoring platform built for enter
 - Role-Based Access Control (RBAC) via Firestore Security Rules.
 - Contextual error handling for Permission Denied errors.
 - Sanitized client-side mutations.
+=======
+# EcoSync
+>>>>>>> 208f54b0e4ab8ccc2e4e192686b1c8b914acefb1
