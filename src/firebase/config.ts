@@ -3,7 +3,6 @@
 export const firebaseConfig = {
   projectId: "studio-1279970876-eb44b",
   appId: "1:94656361680:web:2d7ccb22b8b1ef16fa5ad5",
-  apiKey: "AIzaSyCgENzeoS1f3JI-5mGuREinsCexHl9ZICc",
   authDomain: "studio-1279970876-eb44b.firebaseapp.com",
   messagingSenderId: "94656361680",
 };
