@@ -2,29 +2,40 @@
 
 import { useEffect } from 'react';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
+import { AuthService } from '@/services/auth.service';
 
+/**
+ * Handles seamless background authentication for guest users.
+ */
 export function AnonymousAuth() {
   const auth = useAuth();
+  const db = useFirestore();
 
   useEffect(() => {
-    if (!auth) return;
+    if (!auth || !db) return;
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const authService = new AuthService(auth, db);
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        signInAnonymously(auth).catch((error) => {
-          // Log configuration errors but don't crash the app
+        try {
+          const cred = await signInAnonymously(auth);
+          // Sync anonymous profile immediately
+          await authService.syncProfile(cred.user);
+        } catch (error: any) {
           if (error.code === 'auth/configuration-not-found') {
-            console.warn("Anonymous sign-in is not enabled in Firebase Console. Authentication will be limited to manual login.");
+            // Keep it silent here, the landing page will provide the prominent UI warning.
+            console.warn("EcoSync: Anonymous sign-in is not enabled in Firebase Console. Manual activation required at: https://console.firebase.google.com/");
           } else {
-            console.error("Anonymous sign-in failed:", error);
+            console.error("EcoSync: Anonymous sign-in failed:", error);
           }
-        });
+        }
       }
     });
 
     return () => unsubscribe();
-  }, [auth]);
+  }, [auth, db]);
 
   return null;
 }

@@ -1,19 +1,30 @@
-import {type NextRequest, NextResponse} from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
-const unauthenticatedPages = ['/login', '/signup', '/'];
-
+/**
+ * Enterprise Middleware
+ * Handles high-level path routing. Concrete session validation 
+ * occurs in the AuthGuard client-side component.
+ */
 export async function middleware(request: NextRequest) {
-  const {pathname} = request.nextUrl;
+  const { pathname } = request.nextUrl;
 
-  // Optimistically allow most pages, but in a real app you'd check cookies here
-  // For the purpose of this prototype, we handle auth redirects on the client
-  // within pages that require a user ID.
+  // Basic redirection logic for common paths
+  if (pathname === '/home') {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
 
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };

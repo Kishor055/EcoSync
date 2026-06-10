@@ -1,9 +1,8 @@
-
 {
   "entities": {
     "user": {
       "title": "User",
-      "description": "Enterprise user profile.",
+      "description": "Enterprise user profile with sustainability metrics.",
       "type": "object",
       "properties": {
         "name": { "type": "string" },
@@ -28,15 +27,34 @@
       },
       "required": ["name", "type", "efficiencyRating", "energyConsumption"]
     },
-    "activity": {
-      "title": "Activity Log",
-      "description": "User sustainability actions.",
+    "marketplaceItem": {
+      "title": "Marketplace Item",
+      "description": "Items listed for donation or recycling.",
       "type": "object",
       "properties": {
-        "type": { "type": "string" },
+        "title": { "type": "string" },
         "description": { "type": "string" },
-        "timestamp": { "type": "string", "format": "date-time" },
-        "impactScore": { "type": "number" }
+        "category": { "type": "string" },
+        "condition": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "donorId": { "type": "string" },
+        "status": { "type": "string", "enum": ["available", "pending", "claimed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "feedPost": {
+      "title": "Community Post",
+      "description": "Social updates in the eco-community.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userAvatar": { "type": "string" },
+        "content": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "likes": { "type": "number" },
+        "type": { "type": "string", "enum": ["update", "achievement", "milestone"] },
+        "createdAt": { "type": "string", "format": "date-time" }
       }
     }
   },
@@ -52,9 +70,13 @@
       "schema": { "$ref": "#/entities/appliance" },
       "description": "User appliances."
     },
-    "/users/{userId}/activities/{activityId}": {
-      "schema": { "$ref": "#/entities/activity" },
-      "description": "Activity audit logs."
+    "/marketplace/{itemId}": {
+      "schema": { "$ref": "#/entities/marketplaceItem" },
+      "description": "Community marketplace listings."
+    },
+    "/feed/{postId}": {
+      "schema": { "$ref": "#/entities/feedPost" },
+      "description": "Global community activity feed."
     }
   }
 }

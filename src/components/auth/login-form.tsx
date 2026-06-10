@@ -1,195 +1,216 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import {
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-} from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { motion } from 'framer-motion';
+import { Loader2, Mail, Lock, LogIn, ShieldCheck, UserCircle, ShieldAlert } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Icons } from '@/components/icons';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
 import { useAuth, useFirestore } from '@/firebase';
+import { AuthService } from '@/services/auth.service';
+import { useToast } from '@/hooks/use-toast';
+import { Icons } from '@/components/icons';
+
+const loginSchema = z.object({
+  email: z.string().email('Enter a valid enterprise email.'),
+  password: z.string().min(6, 'Security requirement: 6+ characters.'),
+});
 
 export function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
-  const firestore = useFirestore();
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const db = useFirestore();
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
+
+  const authService = new AuthService(auth, db);
+
+  async function onSubmit(values: z.infer<typeof loginSchema>) {
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await authService.loginWithEmail(values.email, values.password);
+      toast({
+        title: "Session Authorized",
+        description: "Welcome back to the EcoSync ecosystem.",
+      });
       router.push('/dashboard');
     } catch (error: any) {
       toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description:
-          error.code === 'auth/invalid-credential'
-            ? 'Invalid email or password.'
-            : error.message,
+        variant: "destructive",
+        title: "Authorization Failed",
+        description: error.message || "Invalid credentials.",
       });
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
-  const handleGoogleSignIn = async () => {
-    setIsGoogleLoading(true);
-    const provider = new GoogleAuthProvider();
+  async function handleGoogleLogin() {
+    setIsLoading(true);
     try {
-      const userCredential = await signInWithPopup(auth, provider);
-      const user = userCredential.user;
-
-      // Create a user document in Firestore if it doesn't exist
-      const userDocRef = doc(firestore, 'users', user.uid);
-      await setDoc(
-        userDocRef,
-        {
-          name: user.displayName,
-          email: user.email,
-          avatarUrl:
-            user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`,
-        },
-        { merge: true }
-      );
-
+      await authService.loginWithGoogle();
+      toast({
+        title: "SSO Success",
+        description: "Authenticated via Google Cloud Identity.",
+      });
       router.push('/dashboard');
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Google Sign-In Failed',
-        description: error.message,
-      });
+      toast({ variant: "destructive", title: "OAuth Error", description: error.message });
     } finally {
-      setIsGoogleLoading(false);
+      setIsLoading(false);
     }
-  };
+  }
+
+  async function handleGuestLogin() {
+    setIsLoading(true);
+    try {
+      await authService.loginAnonymously();
+      toast({
+        title: "Guest Access Enabled",
+        description: "Welcome, Eco Explorer! Enjoy the platform.",
+      });
+      router.push('/dashboard');
+    } catch (error: any) {
+      let description = error.message || "Guest access is currently unavailable.";
+      if (error.code === 'auth/configuration-not-found') {
+        description = "ACTION REQUIRED: Enable 'Anonymous' sign-in in your Firebase Console.";
+      }
+      toast({ variant: "destructive", title: "Guest Access Error", description });
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="text-center">
-        <div className="mb-4 flex justify-center">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-bold text-2xl text-primary"
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="w-full max-w-[480px] p-10 pro-card glass flex flex-col gap-8 border-white/5"
+    >
+      <div className="flex flex-col gap-2 text-center">
+        <div className="flex justify-center mb-6">
+          <motion.div 
+            initial={{ rotate: -10 }}
+            animate={{ rotate: 0 }}
+            className="p-5 bg-primary/10 rounded-[2rem] border border-primary/20 shadow-2xl shadow-primary/10"
           >
-            <Icons.logo className="h-8 w-8" />
-            EcoSync
-          </Link>
+            <Icons.logo className="h-12 w-12 text-primary" />
+          </motion.div>
         </div>
-        <CardTitle className="text-2xl">Welcome Back</CardTitle>
-        <CardDescription>
-          Enter your email below to log in to your account.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        <Button
-          variant="outline"
-          onClick={handleGoogleSignIn}
-          disabled={isLoading || isGoogleLoading}
-        >
-          {isGoogleLoading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48">
-              <path
-                fill="#FFC107"
-                d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"
-              ></path>
-              <path
-                fill="#FF3D00"
-                d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"
-              ></path>
-              <path
-                fill="#4CAF50"
-                d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"
-              ></path>
-              <path
-                fill="#1976D2"
-                d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C42.022,35.022,44,30.032,44,24C44,22.659,43.862,21.35,43.611,20.083z"
-              ></path>
-            </svg>
-          )}
-          Sign in with Google
-        </Button>
+        <div className="space-y-1">
+          <h1 className="text-4xl font-black tracking-tight eco-text-gradient uppercase italic">EcoSync</h1>
+          <p className="text-muted-foreground text-xs font-black tracking-[0.3em] uppercase opacity-60 flex items-center justify-center gap-2">
+            <ShieldCheck className="h-3 w-3" /> Intelligence & Sustainability
+          </p>
+        </div>
+      </div>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">
-              Or continue with
-            </span>
+      <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-2 gap-3">
+          <Button 
+            variant="outline" 
+            onClick={handleGoogleLogin} 
+            disabled={isLoading}
+            className="h-14 rounded-2xl border-white/5 bg-white/5 hover:bg-white/10 transition-all font-black uppercase tracking-widest gap-2 text-[10px]"
+          >
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icons.google className="h-4 w-4" />}
+            Google SSO
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleGuestLogin} 
+            disabled={isLoading}
+            className="h-14 rounded-2xl border-white/5 bg-white/5 hover:bg-white/10 transition-all font-black uppercase tracking-widest gap-2 text-[10px]"
+          >
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserCircle className="h-4 w-4 text-primary" />}
+            Guest Access
+          </Button>
+        </div>
+
+        <div className="relative py-4">
+          <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/5" /></div>
+          <div className="relative flex justify-center text-[9px] uppercase tracking-[0.4em] font-black text-muted-foreground">
+            <span className="bg-[#020202] px-6">Enterprise Login</span>
           </div>
         </div>
-        <form onSubmit={handleLogin}>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading || isGoogleLoading}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading || isGoogleLoading}
-              />
-            </div>
-            <Button
-              className="w-full"
-              type="submit"
-              disabled={isLoading || isGoogleLoading}
-            >
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Log In
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 ml-1">Work Email</FormLabel>
+                  <FormControl>
+                    <div className="relative group">
+                      <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      <Input 
+                        placeholder="name@enterprise.com" 
+                        className="h-14 pl-14 rounded-2xl bg-white/5 border-white/5 focus-visible:ring-primary/20 focus-visible:bg-white/10 transition-all text-sm font-medium" 
+                        {...field} 
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-[10px] uppercase font-bold" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 ml-1">Security Key</FormLabel>
+                  <FormControl>
+                    <div className="relative group">
+                      <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      <Input 
+                        type="password" 
+                        placeholder="••••••••" 
+                        className="h-14 pl-14 rounded-2xl bg-white/5 border-white/5 focus-visible:ring-primary/20 focus-visible:bg-white/10 transition-all text-sm font-medium" 
+                        {...field} 
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-[10px] uppercase font-bold" />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full h-14 rounded-2xl font-black uppercase tracking-widest shadow-2xl shadow-primary/20 eco-gradient border-none group mt-2" disabled={isLoading}>
+              {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <LogIn className="mr-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />}
+              Authorize Session
             </Button>
-          </div>
-        </form>
-      </CardContent>
-      <CardFooter className="flex flex-col gap-4">
-        <div className="text-center text-sm text-muted-foreground">
-          Don't have an account?{' '}
-          <Link href="/signup" className="underline font-medium text-primary">
-            Sign up
+          </form>
+        </Form>
+      </div>
+
+      <div className="text-center pt-2">
+        <p className="text-[11px] text-muted-foreground font-black uppercase tracking-widest">
+          Unauthorized?{" "}
+          <Link href="/signup" className="text-primary hover:text-accent transition-colors underline decoration-primary/30 underline-offset-4">
+            Create Identity
           </Link>
-        </div>
-      </CardFooter>
-    </Card>
+        </p>
+      </div>
+    </motion.div>
   );
 }

@@ -5,10 +5,20 @@ import { useUser, useCollection } from "@/firebase";
 import { UsageChart } from "@/components/dashboard/usage-chart";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { UsageData } from "@/lib/types";
-import { BarChart3, Download, Filter, TrendingDown, Zap, Droplets, Calendar } from "lucide-react";
+import { BarChart3, Download, Filter, TrendingDown, Zap, Droplets, Calendar, Sparkles, ArrowUpRight, Leaf, ShieldAlert, Activity, Globe, History, BrainCircuit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { motion } from "framer-motion";
+import { 
+  Area, 
+  AreaChart, 
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid
+} from "recharts";
 
 export default function ReportsPage() {
   const { user, loading: userLoading } = useUser();
@@ -17,160 +27,164 @@ export default function ReportsPage() {
 
   if (userLoading || usageLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-48" />
-        <Skeleton className="h-[400px] w-full" />
-        <div className="grid gap-4 md:grid-cols-2">
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-        </div>
+      <div className="space-y-12 pb-20">
+        <Skeleton className="h-20 w-[400px] rounded-3xl" />
+        <Skeleton className="h-[600px] w-full rounded-[4rem]" />
       </div>
     );
   }
 
   const totalEnergy = usageData.reduce((acc, curr) => acc + curr.energy, 0);
-  const totalWater = usageData.reduce((acc, curr) => acc + curr.water, 0);
-  const averageEnergy = usageData.length ? (totalEnergy / usageData.length).toFixed(1) : 0;
+  const totalWater = usageData.reduce((acc, curr) => acc + (curr.water || 0), 0);
+  const totalCarbon = usageData.reduce((acc, curr) => acc + (curr.carbonEmissions || (curr.energy * 0.45)), 0);
+  
+  // Predictive Forecast logic
+  const projectedSavings = (totalCarbon * 0.15).toFixed(1);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-700">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Usage Analytics</h1>
-          <p className="text-muted-foreground">Detailed insights into your home's resource efficiency over time.</p>
+    <div className="space-y-12 pb-20 max-w-[1600px] mx-auto animate-in fade-in duration-700">
+      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-5xl font-black tracking-tighter uppercase italic eco-gradient-text">Impact Intelligence</h1>
+          <p className="text-muted-foreground font-medium text-lg italic">Strategic carbon analytics and multi-year environmental trajectory.</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="bg-card">
-            <Filter className="mr-2 h-4 w-4" />
-            Time Range
+        <div className="flex gap-4">
+          <Button variant="outline" className="h-14 px-8 rounded-2xl border-white/5 bg-white/5 hover:bg-white/10 font-black uppercase tracking-widest text-[10px] gap-2">
+            <Calendar className="h-4 w-4" /> Trajectory
           </Button>
-          <Button variant="default" size="sm" className="shadow-lg">
-            <Download className="mr-2 h-4 w-4" />
-            Download PDF
+          <Button className="h-14 px-10 rounded-2xl bg-primary text-black font-black uppercase tracking-widest text-xs shadow-xl gap-2">
+            <Download className="h-4 w-4" /> Global Audit
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-primary/10">
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1 font-medium">
-              <Zap className="h-3 w-3 text-primary" /> Total Energy
-            </CardDescription>
-            <CardTitle className="text-2xl font-bold">{totalEnergy} <span className="text-sm font-normal text-muted-foreground">kWh</span></CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="border-primary/10">
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1 font-medium">
-              <Droplets className="h-3 w-3 text-blue-500" /> Total Water
-            </CardDescription>
-            <CardTitle className="text-2xl font-bold">{totalWater} <span className="text-sm font-normal text-muted-foreground">gal</span></CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="border-primary/10">
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1 font-medium text-primary">
-              <TrendingDown className="h-3 w-3" /> Efficiency Gain
-            </CardDescription>
-            <CardTitle className="text-2xl font-bold text-primary">+12.4%</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="border-primary/10">
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1 font-medium">
-              <Calendar className="h-3 w-3" /> Avg. Monthly
-            </CardDescription>
-            <CardTitle className="text-2xl font-bold">{averageEnergy} <span className="text-sm font-normal text-muted-foreground">kWh</span></CardTitle>
-          </CardHeader>
-        </Card>
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: "Aggregate Carbon", value: `${totalCarbon.toFixed(1)} kg`, icon: Leaf, color: "text-primary", bg: "bg-primary/10" },
+          { label: "Aggregate Energy", value: `${totalEnergy} kWh`, icon: Zap, color: "text-amber-400", bg: "bg-amber-400/10" },
+          { label: "Predictive Saving", value: `${projectedSavings} kg`, icon: BrainCircuit, color: "text-emerald-400", bg: "bg-emerald-400/10" },
+          { label: "Water Intensity", value: `${totalWater} L`, icon: Droplets, color: "text-blue-400", bg: "bg-blue-400/10" },
+        ].map((stat, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
+            <Card className="glass-card border-none rounded-[2.5rem] p-8 group relative overflow-hidden tesla-shadow">
+               <div className="relative z-10 space-y-4">
+                  <div className={`h-12 w-12 ${stat.bg} rounded-2xl flex items-center justify-center border border-white/5`}>
+                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/60">{stat.label}</p>
+                    <p className="text-3xl font-black italic tracking-tighter">{stat.value}</p>
+                  </div>
+               </div>
+               <div className="absolute bottom-0 right-0 p-4 opacity-5 group-hover:opacity-15 transition-opacity">
+                 <stat.icon className="h-24 w-24" />
+               </div>
+            </Card>
+          </motion.div>
+        ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <UsageChart 
-            data={usageData.length > 0 ? usageData : []} 
-            className="min-h-[450px] border-primary/10 shadow-lg" 
-          />
+          <Card className="glass-card border-none rounded-[4rem] p-12 h-full">
+            <div className="flex items-center justify-between mb-12">
+               <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                     <History className="h-5 w-5 text-primary" />
+                     <CardTitle className="text-3xl font-black italic uppercase tracking-tighter">Carbon Trajectory</CardTitle>
+                  </div>
+                  <CardDescription className="font-medium italic">Multi-variable month-over-month resource efficiency telemetry.</CardDescription>
+               </div>
+               <Badge className="bg-primary/20 text-primary border-primary/30 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest italic">Grid Impact: Optimized</Badge>
+            </div>
+            <div className="h-[450px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={usageData.length > 0 ? usageData : [
+                  { month: 'Jan', energy: 320, carbonEmissions: 144 },
+                  { month: 'Feb', energy: 280, carbonEmissions: 126 },
+                  { month: 'Mar', energy: 310, carbonEmissions: 139 },
+                  { month: 'Apr', energy: 270, carbonEmissions: 121 },
+                  { month: 'May', energy: 340, carbonEmissions: 153 },
+                  { month: 'Jun', energy: 300, carbonEmissions: 135 },
+                ]}>
+                  <defs>
+                    <linearGradient id="colorCarbon" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis 
+                    dataKey="month" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: 'black' }}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0C110E', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '1.5rem', padding: '1.5rem' }}
+                    itemStyle={{ color: '#10B981', fontWeight: 'black', fontSize: '10px', textTransform: 'uppercase' }}
+                  />
+                  <Area type="monotone" dataKey="carbonEmissions" stroke="#10B981" strokeWidth={5} fillOpacity={1} fill="url(#colorCarbon)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
         </div>
-        <Card className="lg:col-span-1 border-primary/10 bg-muted/5">
-          <CardHeader>
-            <CardTitle className="text-lg">Resource Summary</CardTitle>
-            <CardDescription>Year-to-date performance against your goals.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="font-medium">Energy Goal (400kWh)</span>
-                <span className="text-muted-foreground">92% reached</span>
-              </div>
-              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-primary w-[92%] transition-all duration-1000" />
-              </div>
+        
+        <div className="lg:col-span-1 space-y-8">
+          <Card className="glass-card border-none rounded-[3.5rem] p-12 bg-gradient-to-br from-primary/10 to-transparent space-y-10 tesla-shadow">
+            <div className="space-y-3">
+               <div className="flex items-center gap-3">
+                  <Globe className="h-5 w-5 text-primary" />
+                  <p className="text-[11px] font-black uppercase tracking-[0.5em] text-primary">Carbon Roadmap</p>
+               </div>
+               <CardTitle className="text-3xl font-black italic uppercase tracking-tighter leading-tight">Zero-Waste Strategic Plan</CardTitle>
             </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="font-medium">Water Goal (2000gal)</span>
-                <span className="text-muted-foreground">75% reached</span>
-              </div>
-              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 w-[75%] transition-all duration-1000" />
-              </div>
+            
+            <div className="space-y-8">
+              {[
+                { label: "Target: Zero Waste", progress: 82, color: "bg-primary" },
+                { label: "Grid Independence", progress: 64, color: "bg-amber-500" },
+                { label: "Resource Synergy", progress: 45, color: "bg-blue-400" },
+              ].map((goal, i) => (
+                <div key={i} className="space-y-5">
+                  <div className="flex justify-between items-center text-[11px] font-black uppercase tracking-widest">
+                    <span>{goal.label}</span>
+                    <span className={goal.color.replace('bg-', 'text-')}>{goal.progress}% Synergy</span>
+                  </div>
+                  <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden border border-white/10 p-[1px]">
+                    <motion.div 
+                      initial={{ width: 0 }} 
+                      animate={{ width: `${goal.progress}%` }} 
+                      className={`h-full ${goal.color} rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)]`} 
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
-            <Separator className="my-4" />
-            <div className="p-4 rounded-xl bg-background/50 border border-primary/10 italic text-sm text-muted-foreground">
-              "You are on track to save approximately $450 in utility costs this year if current trends continue."
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      <Card className="border-primary/10">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-primary" />
-              Monthly Data Points
-            </CardTitle>
-            <CardDescription>A granular look at your historical consumption data.</CardDescription>
-          </div>
-          <Button variant="ghost" size="sm">View All</Button>
-        </CardHeader>
-        <CardContent>
-          <div className="relative w-full overflow-auto">
-            <table className="w-full caption-bottom text-sm">
-              <thead className="[&_tr]:border-b">
-                <tr className="border-b transition-colors hover:bg-muted/50">
-                  <th className="h-12 px-4 text-left align-middle font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">Month</th>
-                  <th className="h-12 px-4 text-right align-middle font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">Energy (kWh)</th>
-                  <th className="h-12 px-4 text-right align-middle font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">Water (gal)</th>
-                  <th className="h-12 px-4 text-right align-middle font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">Efficiency Status</th>
-                </tr>
-              </thead>
-              <tbody className="[&_tr:last-child]:border-0">
-                {usageData.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="p-12 text-center text-muted-foreground italic">No historical data found.</td>
-                  </tr>
-                ) : (
-                  usageData.map((data, i) => (
-                    <tr key={i} className="border-b transition-colors hover:bg-muted/50">
-                      <td className="p-4 align-middle font-bold text-foreground">{data.month}</td>
-                      <td className="p-4 align-middle text-right font-mono font-medium">{data.energy}</td>
-                      <td className="p-4 align-middle text-right font-mono font-medium text-blue-600">{data.water}</td>
-                      <td className="p-4 align-middle text-right">
-                        <Badge variant={data.energy < 300 ? "default" : "secondary"} className="font-bold">
-                          {data.energy < 300 ? "High Efficiency" : "Standard"}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+            <Separator className="bg-white/5" />
+
+            <div className="p-10 rounded-[3rem] bg-white/[0.04] border border-white/5 space-y-6 group hover:border-primary/40 transition-all shadow-xl">
+               <div className="flex items-center gap-4">
+                 <BrainCircuit className="h-6 w-6 text-primary" />
+                 <span className="text-[11px] font-black uppercase tracking-[0.3em] italic">EcoSync Forecast</span>
+               </div>
+               <p className="text-[13px] font-medium leading-relaxed italic text-white/80">
+                 "Predicted carbon offset for <span className="text-primary font-black">Q4 2024</span>: <span className="text-white font-black">240 kg CO₂e</span> through automated duty-cycle arbitrage."
+               </p>
+               <Button variant="link" className="p-0 h-auto text-[10px] font-black uppercase tracking-widest text-primary gap-3 group-hover:gap-5 transition-all">
+                 Establish Roadmap <ArrowUpRight className="h-4 w-4" />
+               </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

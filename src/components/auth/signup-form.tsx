@@ -1,202 +1,197 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import {
-  createUserWithEmailAndPassword,
-  updateProfile,
-  GoogleAuthProvider,
-  signInWithPopup,
-} from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { motion } from 'framer-motion';
+import { Loader2, Mail, Lock, User, UserPlus, UserCircle } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Icons } from '@/components/icons';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
 import { useAuth, useFirestore } from '@/firebase';
+import { AuthService } from '@/services/auth.service';
+import { useToast } from '@/hooks/use-toast';
+import { Icons } from '@/components/icons';
+
+const signupSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters.'),
+  email: z.string().email('Valid enterprise email required.'),
+  password: z.string().min(6, 'Minimum 6 characters for security.'),
+});
 
 export function SignupForm() {
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
-  const firestore = useFirestore();
-
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const db = useFirestore();
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!auth || !firestore) return;
-    
+  const form = useForm<z.infer<typeof signupSchema>>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: { name: '', email: '', password: '' },
+  });
+
+  const authService = new AuthService(auth, db);
+
+  async function onSubmit(values: z.infer<typeof signupSchema>) {
     setIsLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
-
-      await updateProfile(user, { displayName: name });
-
-      const userDocRef = doc(firestore, 'users', user.uid);
-      await setDoc(userDocRef, {
-        name: name,
-        email: user.email,
-        avatarUrl: `https://picsum.photos/seed/${user.uid}/40/40`,
+      await authService.signupWithEmail(values.email, values.password, values.name);
+      toast({
+        title: "Registration Success",
+        description: "Your digital eco-identity has been established.",
       });
-
       router.push('/dashboard');
     } catch (error: any) {
       toast({
-        variant: 'destructive',
-        title: 'Sign Up Failed',
-        description: error.message === 'auth/configuration-not-found' 
-          ? 'Registration is currently limited. Please contact support.' 
-          : error.message,
+        variant: "destructive",
+        title: "Registration Failed",
+        description: error.message || "Could not complete signup.",
       });
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
-  const handleGoogleSignIn = async () => {
-    if (!auth || !firestore) return;
-    setIsGoogleLoading(true);
-    const provider = new GoogleAuthProvider();
+  async function handleGuestLogin() {
+    setIsLoading(true);
     try {
-      const userCredential = await signInWithPopup(auth, provider);
-      const user = userCredential.user;
-
-      const userDocRef = doc(firestore, 'users', user.uid);
-      await setDoc(
-        userDocRef,
-        {
-          name: user.displayName,
-          email: user.email,
-          avatarUrl: user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`,
-        },
-        { merge: true }
-      );
-
+      await authService.loginAnonymously();
+      toast({
+        title: "Guest Access Enabled",
+        description: "Welcome! You are exploring as a guest.",
+      });
       router.push('/dashboard');
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Google Sign-In Failed',
-        description: error.message.includes('configuration-not-found')
-          ? 'Google Sign-In is not enabled in the Firebase Console.'
-          : error.message,
-      });
+      toast({ variant: "destructive", title: "Guest Access Error", description: error.message });
     } finally {
-      setIsGoogleLoading(false);
+      setIsLoading(false);
     }
-  };
+  }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="text-center">
-        <div className="mb-4 flex justify-center">
-          <Link href="/" className="flex items-center gap-2 font-bold text-2xl text-primary">
-            <Icons.logo className="h-8 w-8" />
-            EcoSync
-          </Link>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full max-w-[480px] p-10 pro-card glass flex flex-col gap-8 border-white/5"
+    >
+      <div className="flex flex-col gap-2 text-center">
+        <div className="flex justify-center mb-6">
+          <motion.div 
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            className="p-5 bg-primary/10 rounded-[2rem] border border-primary/20 shadow-2xl"
+          >
+            <Icons.logo className="h-10 w-10 text-primary" />
+          </motion.div>
         </div>
-        <CardTitle className="text-2xl">Create an Account</CardTitle>
-        <CardDescription>
-          Start your journey towards a more sustainable home.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        <Button
-          variant="outline"
-          onClick={handleGoogleSignIn}
-          disabled={isLoading || isGoogleLoading}
-        >
-          {isGoogleLoading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Icons.google className="mr-2 h-4 w-4" />
-          )}
-          Sign up with Google
-        </Button>
+        <h1 className="text-4xl font-black tracking-tight eco-text-gradient uppercase italic">Join EcoSync</h1>
+        <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Establish Your Sustainability Profile</p>
+      </div>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">
-              Or continue with email
-            </span>
-          </div>
-        </div>
-        <form onSubmit={handleSignup}>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                placeholder="Alex Green"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
-            <Button className="w-full" type="submit" disabled={isLoading || isGoogleLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Account
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] font-black uppercase tracking-widest text-primary/80 ml-1">Full Name</FormLabel>
+                <FormControl>
+                  <div className="relative group">
+                    <User className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                    <Input 
+                      placeholder="e.g. Alex Green" 
+                      className="h-14 pl-14 rounded-2xl bg-white/5 border-white/5 focus-visible:ring-primary/20 focus-visible:bg-white/10 transition-all text-sm font-bold" 
+                      {...field} 
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage className="text-[10px] uppercase font-bold" />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] font-black uppercase tracking-widest text-primary/80 ml-1">Corporate Email</FormLabel>
+                <FormControl>
+                  <div className="relative group">
+                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                    <Input 
+                      placeholder="name@ecosync.io" 
+                      className="h-14 pl-14 rounded-2xl bg-white/5 border-white/5 focus-visible:ring-primary/20 focus-visible:bg-white/10 transition-all text-sm font-bold" 
+                      {...field} 
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage className="text-[10px] uppercase font-bold" />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] font-black uppercase tracking-widest text-primary/80 ml-1">Access Key</FormLabel>
+                <FormControl>
+                  <div className="relative group">
+                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                    <Input 
+                      type="password" 
+                      placeholder="••••••••" 
+                      className="h-14 pl-14 rounded-2xl bg-white/5 border-white/5 focus-visible:ring-primary/20 focus-visible:bg-white/10 transition-all text-sm font-bold" 
+                      {...field} 
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage className="text-[10px] uppercase font-bold" />
+              </FormItem>
+            )}
+          />
+          
+          <div className="pt-2 flex flex-col gap-3">
+            <Button type="submit" className="w-full h-14 rounded-2xl font-black shadow-2xl shadow-primary/20 eco-gradient border-none uppercase tracking-widest text-sm" disabled={isLoading}>
+              {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <UserPlus className="mr-2 h-5 w-5" />}
+              Create Identity
+            </Button>
+            
+            <Button 
+              type="button" 
+              variant="ghost" 
+              onClick={handleGuestLogin}
+              disabled={isLoading}
+              className="w-full h-12 rounded-2xl border-white/5 hover:bg-white/5 font-black uppercase tracking-widest text-[10px] text-muted-foreground hover:text-primary transition-all"
+            >
+              <UserCircle className="mr-2 h-4 w-4" />
+              Continue as Guest
             </Button>
           </div>
         </form>
-      </CardContent>
-      <CardFooter className="flex flex-col gap-4">
-        <div className="text-center text-sm text-muted-foreground">
-          Already have an account?{' '}
-          <Link href="/login" className="underline font-medium text-primary">
-            Log In
+      </Form>
+
+      <div className="text-center pt-2">
+        <p className="text-[11px] text-muted-foreground font-black uppercase tracking-widest">
+          Already verified?{" "}
+          <Link href="/login" className="text-primary hover:text-accent transition-colors underline decoration-primary/30 underline-offset-4">
+            Secure Sign-In
           </Link>
-        </div>
-      </CardFooter>
-    </Card>
+        </p>
+      </div>
+    </motion.div>
   );
 }

@@ -1,10 +1,8 @@
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import { History, CheckCircle2, Zap, ArrowUpRight } from "lucide-react";
+import { History, CheckCircle2, Zap } from "lucide-react";
 import type { ActivityLog } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
 interface ActivityFeedProps {
   activities: ActivityLog[];
@@ -43,11 +41,6 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1 text-[11px] font-bold text-accent">
-                      <Zap className="h-3 w-3" />
-                      +{activity.impactScore} XP
-                    </span>
-                    <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
                     <span className="text-[11px] text-muted-foreground font-medium">EcoBoost Active</span>
                   </div>
                 </div>

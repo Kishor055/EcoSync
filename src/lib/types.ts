@@ -1,4 +1,3 @@
-
 export type Role = 'user' | 'admin';
 
 export interface UserProfile {
@@ -8,6 +7,11 @@ export interface UserProfile {
   avatarUrl: string;
   role: Role;
   createdAt: string;
+  sustainabilityDNA: {
+    energyPreference: 'eco' | 'balanced' | 'performance';
+    waterTarget: number;
+    footprintGoal: number;
+  };
 }
 
 export type ApplianceType = 
@@ -20,7 +24,8 @@ export type ApplianceType =
   | "Lighting"
   | "Computer"
   | "EV Charger"
-  | "Furnace";
+  | "Furnace"
+  | "Desert Cooler";
 
 export interface Appliance {
   id: string;
@@ -29,6 +34,25 @@ export interface Appliance {
   efficiencyRating: "A" | "B" | "C" | "D";
   energyConsumption: number; 
   waterConsumption: number;
+  healthScore: number; // 0-100
+  status: 'active' | 'maintenance' | 'eco_mode' | 'standby';
+  lastUpdated?: string;
+  predictiveFailureDate?: string;
+  telemetry?: {
+    voltage: number;
+    cycles: number;
+    runtime: number;
+  };
+}
+
+export interface IoTDevice {
+  id: string;
+  name: string;
+  type: 'ESP32' | 'RaspberryPi' | 'MQTT_Node' | 'Arduino';
+  status: 'online' | 'offline';
+  load: string;
+  data: string;
+  lastSync: string;
 }
 
 export interface UsageData {
@@ -36,12 +60,48 @@ export interface UsageData {
   month: string;
   energy: number;
   water: number;
+  carbonEmissions: number;
+  prediction?: number;
+  efficiencyScore?: number;
 }
 
 export interface ActivityLog {
   id: string;
-  type: 'appliance_added' | 'goal_reached' | 'optimization_applied';
+  type: 'appliance_added' | 'goal_reached' | 'optimization_applied' | 'item_donated' | 'alert_triggered';
   description: string;
   timestamp: string;
   impactScore: number;
+}
+
+export interface MarketplaceItem {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  condition: string;
+  imageUrl: string;
+  donorId: string;
+  status: 'available' | 'pending' | 'claimed';
+  createdAt: string;
+}
+
+export interface FeedPost {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  content: string;
+  imageUrl?: string;
+  likes: number;
+  type: 'update' | 'achievement' | 'milestone';
+  createdAt: string;
+}
+
+export interface EcoMission {
+  id: string;
+  title: string;
+  reward: number;
+  progress: number;
+  deadline: string;
+  type: 'energy' | 'water' | 'community';
 }

@@ -1,73 +1,102 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 140 20% 98%;
-    --foreground: 140 40% 5%;
-    --card: 0 0% 100%;
-    --card-foreground: 140 40% 10%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 140 40% 10%;
-    --primary: 142 60% 25%;
-    --primary-foreground: 140 20% 98%;
-    --secondary: 140 30% 94%;
-    --secondary-foreground: 142 60% 15%;
-    --muted: 140 10% 92%;
-    --muted-foreground: 140 10% 35%;
-    --accent: 38 95% 45%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --background: 160 10% 4%;
+    --foreground: 0 0% 98%;
+    --card: 160 12% 9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 160 12% 9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 150 100% 50%;
+    --primary-foreground: 160 10% 3%;
+    --secondary: 160 5% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 160 5% 15%;
+    --muted-foreground: 160 5% 75%;
+    --accent: 150 100% 50%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 140 15% 88%;
-    --input: 140 15% 88%;
-    --ring: 142 60% 25%;
-    --radius: 1rem;
-    --chart-1: 142 60% 35%;
-    --chart-2: 38 95% 45%;
-    --chart-3: 199 89% 48%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 10 80% 60%;
-  }
- 
-  .dark {
-    --background: 140 40% 4%;
-    --foreground: 140 10% 98%;
-    --card: 140 35% 7%;
-    --card-foreground: 140 10% 98%;
-    --popover: 140 35% 5%;
-    --popover-foreground: 140 10% 98%;
-    --primary: 142 60% 50%;
-    --primary-foreground: 140 40% 5%;
-    --secondary: 140 30% 12%;
-    --secondary-foreground: 140 10% 98%;
-    --muted: 140 30% 10%;
-    --muted-foreground: 140 10% 60%;
-    --accent: 38 95% 55%;
-    --accent-foreground: 140 40% 5%;
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 140 10% 98%;
-    --border: 140 30% 15%;
-    --input: 140 30% 15%;
-    --ring: 142 60% 50%;
+    --border: 160 5% 25%;
+    --input: 160 5% 25%;
+    --ring: 150 100% 50%;
+    --radius: 2.5rem;
+    --chart-1: 150 100% 50%;
+    --chart-2: 210 100% 60%;
+    --chart-3: 180 100% 50%;
+    --chart-4: 30 100% 50%;
+    --chart-5: 0 100% 50%;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-sans antialiased selection:bg-primary/30;
+    background: #020403;
+    overflow-x: hidden;
+    /* Performance boost: prevent overscroll effects on mobile */
+    overscroll-behavior-y: none;
   }
 }
 
 .glass-card {
-  @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-2xl dark:bg-black/40 dark:border-white/5;
+  @apply bg-[#0E1411]/95 backdrop-blur-3xl border border-white/20 shadow-[0_25px_60px_rgba(0,0,0,0.95)] transition-all duration-300;
+  /* Hardware acceleration hint */
+  will-change: transform, border-color, box-shadow;
 }
 
-.pro-gradient {
-  @apply bg-gradient-to-br from-primary/5 via-transparent to-accent/5;
+.glass-card:hover {
+  @apply border-primary/80 bg-[#121A16]/100 shadow-[0_0_80px_rgba(16,185,129,0.4)];
+}
+
+.eco-gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-primary to-primary brightness-150;
+}
+
+.radial-glow {
+  background: radial-gradient(circle at center, rgba(16, 185, 129, 0.4) 0%, transparent 75%);
+}
+
+.animate-glow {
+  animation: glow 4s ease-in-out infinite alternate;
+  will-change: filter;
+}
+
+@keyframes glow {
+  from { filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.6)); }
+  to { filter: drop-shadow(0 0 60px rgba(16, 185, 129, 1)); }
+}
+
+.animate-spin-slow {
+  animation: spin 60s linear infinite;
+  will-change: transform;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.tesla-shadow {
+  box-shadow: 0 0 35px rgba(16, 185, 129, 0.2), inset 0 0 25px rgba(16, 185, 129, 0.1);
+}
+
+@media (max-width: 768px) {
+  :root {
+    --radius: 1.5rem;
+  }
 }
