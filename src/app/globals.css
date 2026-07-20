@@ -40,14 +40,12 @@
     @apply bg-background text-foreground font-sans antialiased selection:bg-primary/30;
     background: #020403;
     overflow-x: hidden;
-    /* Performance boost: prevent overscroll effects on mobile */
     overscroll-behavior-y: none;
   }
 }
 
 .glass-card {
   @apply bg-[#0E1411]/95 backdrop-blur-3xl border border-white/20 shadow-[0_25px_60px_rgba(0,0,0,0.95)] transition-all duration-300;
-  /* Hardware acceleration hint */
   will-change: transform, border-color, box-shadow;
 }
 

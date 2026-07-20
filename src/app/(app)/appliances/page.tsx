@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from "react";
@@ -36,12 +35,11 @@ export default function AppliancesPage() {
     const docRef = doc(db, "users", user.uid, "appliances", applianceId);
     
     deleteDoc(docRef)
-      .then(() => {
-        toast({ title: "Module Decommissioned", description: `${name} has been removed from grid.` });
-      })
       .catch(async () => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'delete' }));
       });
+    
+    toast({ title: "Module Decommissioned", description: `${name} has been removed from grid.` });
   };
 
   const runDiagnostics = async (appliance: Appliance) => {
@@ -57,10 +55,19 @@ export default function AppliancesPage() {
       });
 
       const docRef = doc(db, "users", user.uid, "appliances", appliance.id);
-      await updateDoc(docRef, { 
-        healthScore: Math.floor(result.healthScore || appliance.healthScore),
-        status: result.priority === 'critical' ? 'maintenance' : 'active'
-      });
+      const updateData = { 
+        healthScore: Math.floor(result.failureProbability ? (1 - result.failureProbability) * 100 : appliance.healthScore),
+        status: result.priority === 'critical' || result.priority === 'high' ? 'maintenance' : 'active'
+      };
+
+      updateDoc(docRef, updateData)
+        .catch(async () => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+            path: docRef.path, 
+            operation: 'update',
+            requestResourceData: updateData
+          }));
+        });
 
       toast({
         title: "Diagnostic Complete",

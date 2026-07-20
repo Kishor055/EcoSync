@@ -17,9 +17,11 @@ import {
   Star,
   Trophy,
   Flame,
+  Activity,
+  ArrowUpRight
 } from "lucide-react";
 import { useUser, useCollection } from "@/firebase";
-import type { UsageData } from "@/lib/types";
+import type { UsageData, Appliance } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -38,19 +40,21 @@ const AreaChart = dynamic(() => import("recharts").then(mod => mod.AreaChart), {
 const Area = dynamic(() => import("recharts").then(mod => mod.Area), { ssr: false });
 const ResponsiveContainer = dynamic(() => import("recharts").then(mod => mod.ResponsiveContainer), { ssr: false });
 
-const initialSparklineData = [
-  { val: 12 }, { val: 28 }, { val: 18 }, { val: 34 }, { val: 22 }, { val: 45 }, { val: 38 }
-];
-
 export default function DashboardPage() {
   const { user } = useUser();
   const usagePath = useMemo(() => user?.uid ? `users/${user.uid}/usageData` : null, [user?.uid]);
+  const appliancesPath = useMemo(() => user?.uid ? `users/${user.uid}/appliances` : null, [user?.uid]);
+  
   const { data: usageData } = useCollection<UsageData>(usagePath);
+  const { data: appliances } = useCollection<Appliance>(appliancesPath);
+  
   const [isMounted, setIsMounted] = useState(false);
-  const [sparkData, setSparkData] = useState(initialSparklineData);
+  const [sparkData, setSparkData] = useState<{val: number}[]>([]);
 
   useEffect(() => {
     setIsMounted(true);
+    setSparkData(Array.from({ length: 7 }, () => ({ val: Math.floor(Math.random() * 40) + 10 })));
+    
     const interval = setInterval(() => {
       setSparkData(prev => {
         const next = [...prev.slice(1), { val: Math.floor(Math.random() * 50) + 10 }];
@@ -63,6 +67,8 @@ export default function DashboardPage() {
   const totalCarbon = useMemo(() => {
     return usageData?.reduce((acc, curr) => acc + (curr.carbonEmissions || (curr.energy * 0.45)), 0) || 128.4;
   }, [usageData]);
+
+  const activeApplianceCount = useMemo(() => appliances.length, [appliances]);
 
   const stats = useMemo(() => [
     { label: "Net Grid Load", value: "24.8 kWh", trend: "12% efficient", icon: Zap, color: "text-amber-400", isDown: true },
@@ -101,7 +107,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-12 text-[12px] font-black text-white bg-white/[0.03] px-12 py-7 rounded-[3.5rem] border border-white/10 backdrop-blur-3xl shadow-2xl tesla-shadow">
              <div className="flex items-center gap-6 border-r border-white/10 pr-12">
                 <Radar className="h-7 w-7 text-primary animate-pulse" />
-                <span className="uppercase tracking-[0.6em] text-[10px]">Grid Status</span>
+                <span className="uppercase tracking-[0.6em] text-[10px]">Mesh Active: {activeApplianceCount} Nodes</span>
              </div>
              <div className="flex items-center gap-6">
                 <CloudSun className="h-8 w-8 text-amber-500" />
@@ -133,13 +139,15 @@ export default function DashboardPage() {
                     <span className="text-[12px] font-black text-primary uppercase tracking-[0.4em] italic">{stat.trend}</span>
                   </div>
                </div>
-               <div className="absolute bottom-0 left-0 right-0 h-32 opacity-30 pointer-events-none translate-y-4 group-hover:opacity-60 transition-opacity duration-700">
-                  <ResponsiveContainer width="100%" height="100%">
-                     <AreaChart data={sparkData}>
-                        <Area type="monotone" dataKey="val" stroke="currentColor" fill="currentColor" className={stat.color} strokeWidth={10} isAnimationActive={false} />
-                     </AreaChart>
-                  </ResponsiveContainer>
-               </div>
+               {sparkData.length > 0 && (
+                 <div className="absolute bottom-0 left-0 right-0 h-32 opacity-30 pointer-events-none translate-y-4 group-hover:opacity-60 transition-opacity duration-700">
+                    <ResponsiveContainer width="100%" height="100%">
+                       <AreaChart data={sparkData}>
+                          <Area type="monotone" dataKey="val" stroke="currentColor" fill="currentColor" className={stat.color} strokeWidth={10} isAnimationActive={false} />
+                       </AreaChart>
+                    </ResponsiveContainer>
+                 </div>
+               )}
             </Card>
           ))}
         </div>
