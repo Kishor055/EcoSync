@@ -1,3 +1,4 @@
+
 export type Role = 'user' | 'admin';
 
 export interface UserProfile {
@@ -25,7 +26,8 @@ export type ApplianceType =
   | "Computer"
   | "EV Charger"
   | "Furnace"
-  | "Desert Cooler";
+  | "Desert Cooler"
+  | "Solar Array";
 
 export interface Appliance {
   id: string;
@@ -38,21 +40,6 @@ export interface Appliance {
   status: 'active' | 'maintenance' | 'eco_mode' | 'standby';
   lastUpdated?: string;
   predictiveFailureDate?: string;
-  telemetry?: {
-    voltage: number;
-    cycles: number;
-    runtime: number;
-  };
-}
-
-export interface IoTDevice {
-  id: string;
-  name: string;
-  type: 'ESP32' | 'RaspberryPi' | 'MQTT_Node' | 'Arduino';
-  status: 'online' | 'offline';
-  load: string;
-  data: string;
-  lastSync: string;
 }
 
 export interface UsageData {
@@ -100,8 +87,10 @@ export interface FeedPost {
 export interface EcoMission {
   id: string;
   title: string;
+  description: string;
   reward: number;
   progress: number;
   deadline: string;
   type: 'energy' | 'water' | 'community';
+  icon?: any;
 }

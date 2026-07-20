@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Target, Zap, Droplets, Users, Trophy, Sparkles, Clock, ArrowRight } from 'lucide-react';
+import { Target, Zap, Droplets, Users, Trophy, Sparkles, Clock, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useUser } from '@/firebase';
 
 const missions = [
@@ -72,10 +72,10 @@ export default function MissionsPage() {
             animate={{ opacity: 1, y: 0 }} 
             transition={{ delay: idx * 0.1 }}
           >
-            <Card className="glass-card border-none rounded-[3.5rem] overflow-hidden group hover:scale-[1.02] transition-all flex flex-col h-full border-none shadow-2xl">
+            <Card className="glass-card border-none rounded-[3.5rem] overflow-hidden group hover:scale-[1.02] transition-all flex flex-col h-full shadow-2xl">
               <CardHeader className="p-10 space-y-6">
                 <div className="flex justify-between items-start">
-                   <div className={`p-4 bg-white/5 rounded-2xl border border-white/10 group-hover:border-primary/40 transition-all`}>
+                   <div className="p-4 bg-white/5 rounded-2xl border border-white/10 group-hover:border-primary/40 transition-all">
                       <mission.icon className={`h-8 w-8 ${mission.color}`} />
                    </div>
                    <Badge className="bg-primary/20 text-primary border-none px-4 py-1.5 rounded-xl font-black uppercase tracking-widest text-[9px]">
@@ -100,11 +100,10 @@ export default function MissionsPage() {
                       <motion.div 
                         initial={{ width: 0 }} 
                         animate={{ width: `${mission.progress}%` }} 
-                        className={`h-full bg-primary shadow-[0_0_15px_rgba(16,185,129,0.5)]`}
+                        className="h-full bg-primary shadow-[0_0_15px_rgba(16,185,129,0.5)]"
                       />
                    </div>
                 </div>
-
                 <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                    <Clock className="h-4 w-4" /> {mission.deadline}
                 </div>
@@ -124,7 +123,7 @@ export default function MissionsPage() {
         <Card className="glass-card border-none rounded-[4rem] p-16 flex flex-col md:flex-row items-center gap-12 border-none tesla-shadow relative overflow-hidden">
            <div className="absolute inset-0 bg-primary/5 opacity-50 blur-[120px]" />
            <div className="relative z-10 p-10 bg-primary/20 rounded-[3rem] border-2 border-primary/30 animate-glow">
-              <Sparkles className="h-20 w-20 text-primary" />
+              <ShieldCheck className="h-20 w-20 text-primary" />
            </div>
            <div className="relative z-10 flex-1 space-y-6 text-center md:text-left">
               <div className="space-y-2">
@@ -132,11 +131,11 @@ export default function MissionsPage() {
                  <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter">Seasonal: Zero-Emission Quest</h2>
               </div>
               <p className="text-xl font-medium italic text-muted-foreground leading-relaxed max-w-2xl">
-                 Join a global collective of 12,000 eco-warriors in our largest synchronization event. Synchronize your appliances with the district grid to maximize regional efficiency.
+                 Join 12,000 eco-warriors in our largest synchronization event. Shift your hardware duty cycles to maximize regional grid efficiency.
               </p>
               <div className="flex flex-wrap gap-4 justify-center md:justify-start pt-4">
-                 <Button className="h-16 px-12 rounded-2xl bg-primary text-black font-black uppercase tracking-widest text-xs shadow-xl tesla-shadow">Join Global Fleet</Button>
-                 <Button variant="outline" className="h-16 px-10 rounded-2xl border-white/10 bg-white/5 font-black uppercase tracking-widest text-[10px]">Intel Report</Button>
+                 <Button className="h-16 px-12 rounded-2xl bg-primary text-black font-black uppercase tracking-widest text-xs shadow-xl">Join Global Fleet</Button>
+                 <Button variant="outline" className="h-16 px-10 rounded-2xl border-white/10 bg-white/5 font-black uppercase tracking-widest text-[10px]">Strategic Report</Button>
               </div>
            </div>
         </Card>
