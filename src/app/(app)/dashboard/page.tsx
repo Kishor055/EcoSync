@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import { Card, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle, CardContent } from "@/components/ui/card";
 import { 
   Leaf, 
   Droplets, 
@@ -14,17 +14,20 @@ import {
   TrendingDown,
   Cpu,
   Radar,
-  AlertCircle,
   Star,
   Trophy,
   Flame,
   Wind,
-  BatteryCharging
+  BatteryCharging,
+  Compass,
+  ArrowUpRight,
+  ShieldCheck
 } from "lucide-react";
 import { useUser, useCollection } from "@/firebase";
 import type { UsageData, Appliance } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AiTips } from "@/components/dashboard/ai-tips";
 
 const SustainabilityScore = dynamic(() => import("@/components/dashboard/sustainability-score").then(mod => mod.SustainabilityScore), { 
   loading: () => <div className="h-full w-full bg-white/5 animate-pulse rounded-[4rem]" />,
@@ -144,8 +147,9 @@ export default function DashboardPage() {
              </div>
           </Card>
         </div>
-        <div className="xl:col-span-1">
-          <Card className="glass-card rounded-[4rem] h-full p-10 border-none relative overflow-hidden shadow-2xl tesla-shadow flex flex-col space-y-10">
+        <div className="xl:col-span-1 space-y-10">
+          <AiTips />
+          <Card className="glass-card rounded-[4rem] p-10 border-none relative overflow-hidden shadow-2xl tesla-shadow flex flex-col space-y-10">
              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
                    <Radar className="h-6 w-6 text-primary" />

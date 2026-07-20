@@ -12,6 +12,8 @@ export interface UserProfile {
     energyPreference: 'eco' | 'balanced' | 'performance';
     waterTarget: number;
     footprintGoal: number;
+    treesPlanted: number;
+    impactScore: number;
   };
 }
 
