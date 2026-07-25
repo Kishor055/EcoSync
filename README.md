@@ -70,6 +70,7 @@ EcoSync follows enterprise security protocols:
    ```
 
 ---
+Developed By @Kishor055
 
 ## 📄 License
 &copy; 2025 EcoSync Enterprise. Built for a sustainable, self-optimizing future.
