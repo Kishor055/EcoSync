@@ -440,7 +440,7 @@ GitHub:
 **https://github.com/Kishor055**
 
 LinkedIn:
-**https://linkedin.com/in/kishor055**
+**https://www.linkedin.com/in/kishor-kakde-patil**
 
 ---
 
